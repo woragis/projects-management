@@ -1,0 +1,256 @@
+<mxfile host="65bd71144e">
+    <diagram name="Fluxo de Pedido - Diagrama de Atividades" id="gtrUZip8ToMoXVADde8c">
+        <mxGraphModel dx="730" dy="553" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="inicio" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#60a917;fontColor=#000000;strokeColor=#2D7600;" parent="1" vertex="1">
+                    <mxGeometry x="550" y="50" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="selecionar_produtos" value="Selecionar produtos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#3700CC;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="160" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="adicionar_carrinho" value="Adicionar ao carrinho" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#3700CC;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="220" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="confirmar_pedido" value="Confirmar pedido" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#3700CC;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="280" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="escolher_pagamento" value="Escolher método de pagamento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#3700CC;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="340" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="calcular_total" value="Calcular total do pedido" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="220" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="processar_pagamento" value="Processar pagamento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="340" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="criar_pedido" value="Criar pedido no sistema" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="400" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="atribuir_entregador" value="Atribuir entregador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="460" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="finalizar_pedido" value="Finalizar pedido" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="700" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="receber_notificacao" value="Receber notificação" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="460" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="aceitar_pedido" value="Aceitar pedido" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="520" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="buscar_produtos" value="Buscar produtos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="580" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="iniciar_entrega" value="Iniciar entrega" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="640" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="atualizar_status" value="Atualizar status da entrega" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="700" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="entregar_pedido" value="Entregar pedido" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="760" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="confirmar_recebimento" value="Confirmar recebimento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#3700CC;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="820" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="decisao_produtos" value="Mais produtos?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e3c800;strokeColor=#B09500;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="180" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="decisao_pagamento" value="Pagamento aprovado?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e3c800;strokeColor=#B09500;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="380" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="decisao_entregador" value="Entregador disponível?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e3c800;strokeColor=#B09500;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="480" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="decisao_aceitar" value="Aceita pedido?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e3c800;strokeColor=#B09500;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="540" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="fusao1" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="550" y="300" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="fusao2" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="550" y="420" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="fim" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#a20025;strokeColor=#6F0000;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="550" y="880" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="fluxo_inicio_login" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="inicio" target="login_cliente" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_login_selecionar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="login_cliente" target="selecionar_produtos" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_selecionar_adicionar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="selecionar_produtos" target="adicionar_carrinho" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_adicionar_decisao" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="adicionar_carrinho" target="decisao_produtos" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_decisao_sim" value="Sim" style="endArrow=classic;html=1;rounded=0;" parent="1" source="decisao_produtos" target="selecionar_produtos" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_decisao_nao" value="Não" style="endArrow=classic;html=1;rounded=0;" parent="1" source="decisao_produtos" target="confirmar_pedido" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_confirmar_calcular" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="confirmar_pedido" target="calcular_total" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_calcular_escolher" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="calcular_total" target="escolher_pagamento" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_escolher_processar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="escolher_pagamento" target="processar_pagamento" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_processar_decisao" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="processar_pagamento" target="decisao_pagamento" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_pagamento_aprovado" value="Sim" style="endArrow=classic;html=1;rounded=0;" parent="1" source="decisao_pagamento" target="criar_pedido" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_pagamento_negado" value="Não" style="endArrow=classic;html=1;rounded=0;strokeColor=#ff0000;" parent="1" source="decisao_pagamento" target="escolher_pagamento" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_criar_atribuir" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="criar_pedido" target="atribuir_entregador" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_atribuir_decisao" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="atribuir_entregador" target="decisao_entregador" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_entregador_disponivel" value="Sim" style="endArrow=classic;html=1;rounded=0;" parent="1" source="decisao_entregador" target="receber_notificacao" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_entregador_indisponivel" value="Não" style="endArrow=classic;html=1;rounded=0;strokeColor=#ff0000;" parent="1" source="decisao_entregador" target="atribuir_entregador" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_notificacao_aceitar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="receber_notificacao" target="aceitar_pedido" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_aceitar_decisao" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="aceitar_pedido" target="decisao_aceitar" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_aceita_sim" value="Sim" style="endArrow=classic;html=1;rounded=0;" parent="1" source="decisao_aceitar" target="buscar_produtos" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_aceita_nao" value="Não" style="endArrow=classic;html=1;rounded=0;strokeColor=#ff0000;" parent="1" source="decisao_aceitar" target="atribuir_entregador" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_buscar_iniciar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="buscar_produtos" target="iniciar_entrega" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_iniciar_atualizar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="iniciar_entrega" target="atualizar_status" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_atualizar_entregar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="atualizar_status" target="entregar_pedido" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_entregar_confirmar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="entregar_pedido" target="confirmar_recebimento" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_confirmar_finalizar" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="confirmar_recebimento" target="finalizar_pedido" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fluxo_finalizar_fim" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="finalizar_pedido" target="fim" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="400" as="sourcePoint"/>
+                        <mxPoint x="250" y="350" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="titulo" value="Sistema de Gestão de Entregas - Fluxo de Pedido (Diagrama de Atividades)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="10" width="600" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legenda" value="Legenda:&#10;• Verde: Nós de início e fusão&#10;• Roxo: Atividades do Cliente&#10;• Azul: Atividades do Sistema&#10;• Verde: Atividades do Entregador&#10;• Amarelo: Nós de decisão&#10;• Vermelho: Nó de fim&#10;• Linhas vermelhas: Fluxos de erro" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="50" width="300" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="particao_cliente" value="Cliente" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;opacity=20;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="80" width="250" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="login_cliente" value="Cliente faz login" style="rounded=1;whiteSpace=wrap;html=1;" parent="particao_cliente" vertex="1">
+                    <mxGeometry y="26" width="250" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="particao_sistema" value="Sistema" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;opacity=20;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="200" width="200" height="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="particao_entregador" value="Entregador" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;opacity=20;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="440" width="250" height="400" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
