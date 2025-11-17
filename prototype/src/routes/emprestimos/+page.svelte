@@ -177,7 +177,7 @@
 							<p><strong>Devolvido em:</strong> {new Date(emp.emprestimo.dataDevolucaoReal).toLocaleDateString('pt-BR')}</p>
 						{/if}
 						{#if emp.professorAutorizador}
-							<p><strong>Autorizado por:</strong> {emp.professorAutorizador.cliente?.nomeCompleto}</p>
+							<p><strong>Autorizado por:</strong> {emp.usuarioProfessor?.nomeCompleto || 'Professor'}</p>
 						{/if}
 					</div>
 

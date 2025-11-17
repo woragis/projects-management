@@ -27,7 +27,13 @@
 
 	onMount(async () => {
 		try {
-			const response = await api.get(`/clientes/${page.params.id}`);
+			const id = $page.params?.id;
+			if (!id) {
+				error = 'ID não encontrado';
+				loadingData = false;
+				return;
+			}
+			const response = await api.get(`/clientes/${id}`);
 			const usuario = response.data.data;
 			formData = {
 				cpf: usuario.cpf || '',
@@ -103,12 +109,18 @@
 			if (error) return;
 		}
 
+		const id = $page.params?.id;
+		if (!id) {
+			error = 'ID não encontrado';
+			return;
+		}
+
 		loading = true;
 		error = null;
 
 		try {
-			await api.put(`/clientes/${page.params.id}`, formData);
-			goto(`/usuarios/${page.params.id}`);
+			await api.put(`/clientes/${id}`, formData);
+			goto(`/usuarios/${id}`);
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao atualizar usuário';
 		} finally {
@@ -119,7 +131,7 @@
 
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
-		<a href={`/usuarios/${page.params.id}`} class="text-gray-600 hover:text-gray-900">
+		<a href={`/usuarios/${$page.params?.id || ''}`} class="text-gray-600 hover:text-gray-900">
 			<ArrowLeft size={24} />
 		</a>
 		<h1 class="text-3xl font-bold text-gray-900">Editar Usuário</h1>
@@ -281,7 +293,7 @@
 
 			<div class="flex justify-end gap-4">
 				<a 
-					href={`/usuarios/${page.params.id}`}
+					href={`/usuarios/${$page.params?.id || ''}`}
 					class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
 				>
 					Cancelar

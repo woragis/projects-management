@@ -143,14 +143,26 @@
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 									<div class="flex gap-2">
-										<a href="/usuarios/{usuario.id}" class="text-blue-600 hover:text-blue-900">
+										<button 
+											onclick={() => goto(`/usuarios/${usuario.id}`)}
+											class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition"
+											title="Ver detalhes"
+										>
 											<Eye size={18} />
-										</a>
-										<a href="/usuarios/{usuario.id}/editar" class="text-indigo-600 hover:text-indigo-900">
+										</button>
+										<button 
+											onclick={() => goto(`/usuarios/${usuario.id}/editar`)}
+											class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded transition"
+											title="Editar"
+										>
 											<Edit size={18} />
-										</a>
+										</button>
 										{#if authStore.isAdmin(user)}
-											<button onclick={() => deleteUsuario(usuario.id)} class="text-red-600 hover:text-red-900">
+											<button 
+												onclick={() => deleteUsuario(usuario.id)} 
+												class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition"
+												title="Excluir"
+											>
 												<Trash2 size={18} />
 											</button>
 										{/if}

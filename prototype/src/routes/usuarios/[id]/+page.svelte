@@ -21,7 +21,13 @@
 
 	async function loadUsuario() {
 		try {
-			const response = await api.get(`/clientes/${page.params.id}`);
+			const id = $page.params?.id;
+			if (!id) {
+				error = 'ID não encontrado';
+				loading = false;
+				return;
+			}
+			const response = await api.get(`/clientes/${id}`);
 			usuario = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar usuário';
@@ -33,8 +39,14 @@
 	async function solicitarProfessor() {
 		if (!confirm('Deseja solicitar para virar professor?')) return;
 		
+		const id = $page.params?.id;
+		if (!id) {
+			alert('ID não encontrado');
+			return;
+		}
+		
 		try {
-			await api.post(`/usuarios/${page.params.id}/solicitar-professor`);
+			await api.post(`/usuarios/${id}/solicitar-professor`);
 			alert('Solicitação enviada com sucesso!');
 			await loadUsuario();
 		} catch (err: any) {
@@ -43,6 +55,12 @@
 	}
 
 	async function aprovarProfessor() {
+		const id = $page.params?.id;
+		if (!id) {
+			alert('ID não encontrado');
+			return;
+		}
+		
 		const matricula = prompt('Digite a matrícula do professor:');
 		if (!matricula) return;
 
@@ -50,7 +68,7 @@
 		const cargo = prompt('Digite o cargo (opcional):') || undefined;
 
 		try {
-			await api.post(`/usuarios/${page.params.id}/aprovar-professor`, {
+			await api.post(`/usuarios/${id}/aprovar-professor`, {
 				matricula,
 				departamento,
 				cargo
@@ -65,8 +83,14 @@
 	async function rejeitarSolicitacao() {
 		if (!confirm('Deseja rejeitar a solicitação de professor?')) return;
 		
+		const id = $page.params?.id;
+		if (!id) {
+			alert('ID não encontrado');
+			return;
+		}
+		
 		try {
-			await api.post(`/usuarios/${page.params.id}/rejeitar-professor`);
+			await api.post(`/usuarios/${id}/rejeitar-professor`);
 			alert('Solicitação rejeitada');
 			await loadUsuario();
 		} catch (err: any) {
@@ -92,7 +116,7 @@
 		</a>
 		<h1 class="text-3xl font-bold text-gray-900">Detalhes do Usuário</h1>
 		<a 
-			href={`/usuarios/${page.params.id}/editar`}
+			href={`/usuarios/${$page.params?.id || ''}/editar`}
 			class="ml-auto flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
 		>
 			<Edit size={20} />

@@ -61,19 +61,22 @@ export class EmprestimoRepository {
 	}
 
 	async findById(id: string) {
-		// Note: Para evitar join duplicado de usuario, fazemos duas queries ou usamos aliases
-		// Por simplicidade, vamos buscar adminAprovador separadamente se necessário
+		// Criar alias para usuario do professor
+		const usuarioProfessor = usuario;
+		
 		const [result] = await db
 			.select({
 				emprestimo: emprestimo,
 				item: item,
 				solicitante: usuario,
-				professorAutorizador: professor
+				professorAutorizador: professor,
+				usuarioProfessor: usuarioProfessor
 			})
 			.from(emprestimo)
 			.innerJoin(item, eq(emprestimo.itemId, item.id))
 			.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
 			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+			.leftJoin(usuarioProfessor, eq(professor.usuarioId, usuarioProfessor.id))
 			.where(eq(emprestimo.id, id))
 			.limit(1);
 		
@@ -159,17 +162,22 @@ export class EmprestimoRepository {
 
 		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
+		// Criar alias para usuario do professor
+		const usuarioProfessor = usuario;
+		
 		let query = db
 			.select({
 				emprestimo: emprestimo,
 				item: item,
 				solicitante: usuario,
-				professorAutorizador: professor
+				professorAutorizador: professor,
+				usuarioProfessor: usuarioProfessor
 			})
 			.from(emprestimo)
 			.innerJoin(item, eq(emprestimo.itemId, item.id))
 			.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
-			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id));
+			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+			.leftJoin(usuarioProfessor, eq(professor.usuarioId, usuarioProfessor.id));
 
 		if (whereClause) {
 			query = query.where(whereClause);
@@ -206,17 +214,21 @@ export class EmprestimoRepository {
 	async findAtrasados() {
 		try {
 			const hoje = new Date().toISOString().split('T')[0];
+			const usuarioProfessor = usuario;
+			
 			return await db
 				.select({
 					emprestimo: emprestimo,
 					item: item,
-					solicitante: cliente,
-					professorAutorizador: professor
+					solicitante: usuario,
+					professorAutorizador: professor,
+					usuarioProfessor: usuarioProfessor
 				})
 				.from(emprestimo)
 				.innerJoin(item, eq(emprestimo.itemId, item.id))
-				.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+				.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
 				.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+				.leftJoin(usuarioProfessor, eq(professor.usuarioId, usuarioProfessor.id))
 				.where(
 					and(
 						eq(emprestimo.status, 'ativo'),
@@ -236,18 +248,21 @@ export class EmprestimoRepository {
 		const dataLimiteStr = dataLimite.toISOString().split('T')[0];
 
 		const hoje = new Date().toISOString().split('T')[0];
+		const usuarioProfessor = usuario;
 
 		return db
 			.select({
 				emprestimo: emprestimo,
 				item: item,
-				solicitante: cliente,
-				professorAutorizador: professor
+				solicitante: usuario,
+				professorAutorizador: professor,
+				usuarioProfessor: usuarioProfessor
 			})
 			.from(emprestimo)
 			.innerJoin(item, eq(emprestimo.itemId, item.id))
-			.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+			.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
 			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+			.leftJoin(usuarioProfessor, eq(professor.usuarioId, usuarioProfessor.id))
 			.where(
 				and(
 					eq(emprestimo.status, 'ativo'),

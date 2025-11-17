@@ -110,7 +110,7 @@
 				{#if emprestimo.professorAutorizador}
 					<div>
 						<label class="block text-sm font-medium text-gray-500 mb-1">Professor Autorizador</label>
-						<p class="text-lg text-gray-900">{emprestimo.professorAutorizador.cliente?.nomeCompleto}</p>
+						<p class="text-lg text-gray-900">{emprestimo.usuarioProfessor?.nomeCompleto || 'Professor'}</p>
 					</div>
 				{/if}
 
