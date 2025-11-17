@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import '../app.css';
 	import { page } from '$app/stores';
 	import { authStore, type User } from '$lib/stores/auth';
@@ -24,38 +25,45 @@
 	let loading = $state(true);
 
 	onMount(async () => {
+		// Subscribe to auth store to get updates
+		const unsubscribe = authStore.subscribe((u) => {
+			user = u;
+		});
+
 		// Se estiver na página de login, não verificar autenticação
 		try {
 			const currentPath = $page?.url?.pathname || '';
 			if (currentPath === '/login') {
 				loading = false;
-				return;
+				return () => unsubscribe();
 			}
 		} catch (e) {
 			// Se $page não estiver disponível, continuar normalmente
 			console.warn('Page store not available:', e);
 		}
 
+		// Verificar se já temos um usuário no store (ex: após registro/login)
+		const currentUser = get(authStore);
+		if (currentUser) {
+			user = currentUser;
+			loading = false;
+			return () => unsubscribe();
+		}
+
 		// Verificar autenticação ao carregar
 		try {
 			const currentUser = await authStore.checkAuth();
-			user = currentUser;
 			if (!currentUser) {
 				goto('/login');
-				return;
+				return () => unsubscribe();
 			}
 		} catch (err) {
 			console.error('Auth check error:', err);
 			goto('/login');
-			return;
+			return () => unsubscribe();
 		} finally {
 			loading = false;
 		}
-
-		// Inscrever no store para atualizações
-		const unsubscribe = authStore.subscribe((u) => {
-			user = u;
-		});
 
 		return () => {
 			unsubscribe();
@@ -82,6 +90,16 @@
 		return roles[user.role] || user.role;
 	}
 </script>
+
+<svelte:head>
+	<title>Sistema de Empréstimos</title>
+	<meta name="description" content="Sistema de Empréstimos">
+	<meta name="keywords" content="Sistema de Empréstimos, Empréstimos, Biblioteca, UFPE">
+	<meta name="author" content="UFPE">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="/favicon.ico">
+	<link rel="stylesheet" href="/styles.css">
+</svelte:head>
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Sidebar -->
@@ -198,7 +216,7 @@
 		<button
 			type="button"
 			aria-label="Fechar menu"
-			class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+			class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
 			onclick={() => menuOpen = false}
 			onkeydown={(e) => {
 				if (e.key === 'Enter' || e.key === ' ') {

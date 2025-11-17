@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { authStore, type User } from '$lib/stores/auth';
+	import { formatCPF, formatRG, formatDate, formatPhone } from '$lib/utils/format';
 
 	let usuario = $state<any>(null);
 	let loading = $state(true);
@@ -27,7 +28,7 @@
 				loading = false;
 				return;
 			}
-			const response = await api.get(`/clientes/${id}`);
+			const response = await api.get(`/usuarios/${id}`);
 			usuario = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar usuário';
@@ -142,17 +143,17 @@
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">CPF</label>
-					<p class="text-lg text-gray-900">{usuario.cpf}</p>
+					<p class="text-lg text-gray-900 font-mono">{formatCPF(usuario.cpf)}</p>
 				</div>
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">RG</label>
-					<p class="text-lg text-gray-900">{usuario.rg}</p>
+					<p class="text-lg text-gray-900 font-mono">{formatRG(usuario.rg)}</p>
 				</div>
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">Data de Nascimento</label>
-					<p class="text-lg text-gray-900">{new Date(usuario.dataNascimento).toLocaleDateString('pt-BR')}</p>
+					<p class="text-lg text-gray-900">{formatDate(usuario.dataNascimento)}</p>
 				</div>
 
 				<div>
@@ -169,12 +170,12 @@
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">Telefone</label>
-					<p class="text-lg text-gray-900">{usuario.telefone || '-'}</p>
+					<p class="text-lg text-gray-900">{usuario.telefone ? formatPhone(usuario.telefone) : '-'}</p>
 				</div>
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">WhatsApp</label>
-					<p class="text-lg text-gray-900">{usuario.whatsapp || '-'}</p>
+					<p class="text-lg text-gray-900">{usuario.whatsapp ? formatPhone(usuario.whatsapp) : '-'}</p>
 				</div>
 
 				<div>

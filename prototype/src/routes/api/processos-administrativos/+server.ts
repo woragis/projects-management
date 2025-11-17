@@ -4,7 +4,7 @@ import { processoAdministrativoRepository } from '$lib/server/db/repositories';
 
 export const GET: RequestHandler = async ({ url }) => {
 	try {
-		const clienteId = url.searchParams.get('clienteId');
+		const usuarioId = url.searchParams.get('usuarioId') || url.searchParams.get('clienteId'); // Compatibilidade
 		const emprestimoId = url.searchParams.get('emprestimoId');
 		const tipo = url.searchParams.get('tipo') as any;
 		const status = url.searchParams.get('status') as any;
@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		const offset = url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : undefined;
 
 		const processos = await processoAdministrativoRepository.findAll({
-			clienteId: clienteId || undefined,
+			usuarioId: usuarioId || undefined,
 			emprestimoId: emprestimoId || undefined,
 			tipo,
 			status,
@@ -25,7 +25,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		const total = await processoAdministrativoRepository.count({
-			clienteId: clienteId || undefined,
+			usuarioId: usuarioId || undefined,
 			emprestimoId: emprestimoId || undefined,
 			tipo,
 			status,

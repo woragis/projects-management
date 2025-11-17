@@ -33,6 +33,12 @@
 		try {
 			const user = await authStore.login(loginData.cpf, loginData.senha);
 			
+			// Aguardar um pouco para garantir que o cookie foi definido
+			await new Promise(resolve => setTimeout(resolve, 100));
+			
+			// Verificar autenticação novamente para garantir que está sincronizado
+			await authStore.checkAuth();
+			
 			// Redirecionar para dashboard
 			goto('/');
 		} catch (err: any) {
@@ -62,6 +68,12 @@
 		try {
 			const { senhaConfirmacao, ...dataToSend } = registerData;
 			const user = await authStore.register(dataToSend);
+			
+			// Aguardar um pouco para garantir que o cookie foi definido
+			await new Promise(resolve => setTimeout(resolve, 100));
+			
+			// Verificar autenticação novamente para garantir que está sincronizado
+			await authStore.checkAuth();
 			
 			// Redirecionar para dashboard
 			goto('/');

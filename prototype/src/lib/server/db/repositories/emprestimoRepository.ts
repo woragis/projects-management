@@ -1,6 +1,7 @@
 import { db } from '../index';
 import { emprestimo, item, usuario, professor } from '../schemas';
-import { eq, and, desc, asc, count, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, or, desc, asc, count, gte, lte, like } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 
 export interface EmprestimoCreateInput {
 	itemId: string;
@@ -39,6 +40,7 @@ export interface EmprestimoFilters {
 	dataInicioInicio?: string; // data inicial do período
 	dataInicioFim?: string; // data final do período
 	atrasados?: boolean; // apenas emprestimos atrasados
+	search?: string; // busca por nome do item ou solicitante
 	limit?: number;
 	offset?: number;
 	sortBy?: 'dataInicio' | 'dataDevolucaoPrevista' | 'createdAt';
@@ -52,9 +54,8 @@ export class EmprestimoRepository {
 			.values({
 				...data,
 				status: 'ativo',
-				statusAprovacao: data.statusAprovacao || 'pendente',
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				statusAprovacao: data.statusAprovacao || 'pendente'
+				// createdAt and updatedAt are handled by .defaultNow() in the schema
 			})
 			.returning();
 		return result;
@@ -62,7 +63,7 @@ export class EmprestimoRepository {
 
 	async findById(id: string) {
 		// Criar alias para usuario do professor
-		const usuarioProfessor = usuario;
+		const usuarioProfessor = alias(usuario, 'usuario_professor');
 		
 		const [result] = await db
 			.select({
@@ -141,6 +142,10 @@ export class EmprestimoRepository {
 			conditions.push(eq(emprestimo.status, filters.status));
 		}
 
+		if (filters?.statusAprovacao) {
+			conditions.push(eq(emprestimo.statusAprovacao, filters.statusAprovacao));
+		}
+
 		if (filters?.dataInicioInicio) {
 			conditions.push(gte(emprestimo.dataInicio, filters.dataInicioInicio));
 		}
@@ -163,7 +168,7 @@ export class EmprestimoRepository {
 		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
 		// Criar alias para usuario do professor
-		const usuarioProfessor = usuario;
+		const usuarioProfessor = alias(usuario, 'usuario_professor');
 		
 		let query = db
 			.select({
@@ -179,7 +184,20 @@ export class EmprestimoRepository {
 			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
 			.leftJoin(usuarioProfessor, eq(professor.usuarioId, usuarioProfessor.id));
 
-		if (whereClause) {
+		// Busca por texto (nome do item ou solicitante)
+		if (filters?.search) {
+			const searchConditions = [
+				like(item.nome, `%${filters.search}%`),
+				like(usuario.nomeCompleto, `%${filters.search}%`)
+			];
+			const searchClause = or(...searchConditions);
+			
+			if (whereClause) {
+				query = query.where(and(whereClause, searchClause));
+			} else {
+				query = query.where(searchClause);
+			}
+		} else if (whereClause) {
 			query = query.where(whereClause);
 		}
 
@@ -208,13 +226,13 @@ export class EmprestimoRepository {
 			query = query.offset(filters.offset);
 		}
 
-		return query;
+		return await query;
 	}
 
 	async findAtrasados() {
 		try {
 			const hoje = new Date().toISOString().split('T')[0];
-			const usuarioProfessor = usuario;
+			const usuarioProfessor = alias(usuario, 'usuario_professor');
 			
 			return await db
 				.select({
@@ -248,7 +266,7 @@ export class EmprestimoRepository {
 		const dataLimiteStr = dataLimite.toISOString().split('T')[0];
 
 		const hoje = new Date().toISOString().split('T')[0];
-		const usuarioProfessor = usuario;
+		const usuarioProfessor = alias(usuario, 'usuario_professor');
 
 		return db
 			.select({
@@ -292,6 +310,10 @@ export class EmprestimoRepository {
 			conditions.push(eq(emprestimo.status, filters.status));
 		}
 
+		if (filters?.statusAprovacao) {
+			conditions.push(eq(emprestimo.statusAprovacao, filters.statusAprovacao));
+		}
+
 		if (filters?.dataInicioInicio) {
 			conditions.push(gte(emprestimo.dataInicio, filters.dataInicioInicio));
 		}
@@ -312,6 +334,26 @@ export class EmprestimoRepository {
 
 		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
+		// Se houver busca por texto, precisa fazer join com item e usuario
+		if (filters?.search) {
+			const searchConditions = [
+				like(item.nome, `%${filters.search}%`),
+				like(usuario.nomeCompleto, `%${filters.search}%`)
+			];
+			const searchClause = or(...searchConditions);
+			
+			const finalWhere = whereClause ? and(whereClause, searchClause) : searchClause;
+			
+			const [result] = await db
+				.select({ count: count() })
+				.from(emprestimo)
+				.innerJoin(item, eq(emprestimo.itemId, item.id))
+				.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
+				.where(finalWhere);
+			
+			return result.count;
+		}
+
 		const [result] = await db
 			.select({ count: count() })
 			.from(emprestimo)
@@ -325,7 +367,7 @@ export class EmprestimoRepository {
 			.update(emprestimo)
 			.set({
 				...data,
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(eq(emprestimo.id, id))
 			.returning();
@@ -357,7 +399,7 @@ export class EmprestimoRepository {
 			.update(emprestimo)
 			.set({
 				status: 'atrasado',
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(
 				and(

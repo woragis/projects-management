@@ -11,7 +11,13 @@
 
 	onMount(async () => {
 		try {
-			const response = await api.get(`/itens/${page.params.id}`);
+			const id = $page.params?.id;
+			if (!id) {
+				error = 'ID não encontrado';
+				loading = false;
+				return;
+			}
+			const response = await api.get(`/itens/${id}`);
 			item = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar item';
@@ -28,7 +34,7 @@
 		</a>
 		<h1 class="text-3xl font-bold text-gray-900">Detalhes do Item</h1>
 		<a 
-			href={`/itens/${page.params.id}/editar`}
+			href={`/itens/${$page.params?.id || ''}/editar`}
 			class="ml-auto flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
 		>
 			<Edit size={20} />

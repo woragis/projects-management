@@ -34,10 +34,12 @@ export class ProfessorRepository {
 		const [result] = await db
 			.insert(professor)
 			.values({
-				...data,
-				ativo: data.ativo ?? true,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				usuarioId: data.usuarioId,
+				matricula: data.matricula,
+				departamento: data.departamento,
+				cargo: data.cargo,
+				ativo: data.ativo ?? true
+				// createdAt and updatedAt are handled by .defaultNow() in the schema
 			})
 			.returning();
 		return result;
@@ -142,7 +144,7 @@ export class ProfessorRepository {
 			query = query.offset(filters.offset);
 		}
 
-		return query;
+		return await query;
 	}
 
 	async count(filters?: Omit<ProfessorFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'>) {
@@ -192,7 +194,7 @@ export class ProfessorRepository {
 			.update(professor)
 			.set({
 				...data,
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(eq(professor.id, id))
 			.returning();

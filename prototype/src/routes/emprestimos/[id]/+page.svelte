@@ -12,8 +12,14 @@
 	async function devolver() {
 		if (!confirm('Confirmar devolução deste item?')) return;
 		
+		const id = $page.params?.id;
+		if (!id) {
+			alert('ID não encontrado');
+			return;
+		}
+		
 		try {
-			await api.post(`/emprestimos/${page.params.id}/devolver`, {});
+			await api.post(`/emprestimos/${id}/devolver`, {});
 			await api.put(`/itens/${emprestimo.item.id}`, { disponivel: true });
 			await loadEmprestimo();
 		} catch (err: any) {
@@ -23,8 +29,14 @@
 
 	async function loadEmprestimo() {
 		loading = true;
+		const id = $page.params?.id;
+		if (!id) {
+			error = 'ID não encontrado';
+			loading = false;
+			return;
+		}
 		try {
-			const response = await api.get(`/emprestimos/${page.params.id}`);
+			const response = await api.get(`/emprestimos/${id}`);
 			emprestimo = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar empréstimo';

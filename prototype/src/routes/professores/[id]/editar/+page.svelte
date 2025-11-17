@@ -18,7 +18,13 @@
 
 	onMount(async () => {
 		try {
-			const response = await api.get(`/professores/${page.params.id}`);
+			const id = $page.params?.id;
+			if (!id) {
+				error = 'ID não encontrado';
+				loadingData = false;
+				return;
+			}
+			const response = await api.get(`/professores/${id}`);
 			const prof = response.data.data;
 			formData = {
 				matricula: prof.professor?.matricula || '',
@@ -37,9 +43,16 @@
 		loading = true;
 		error = null;
 
+		const id = $page.params?.id;
+		if (!id) {
+			error = 'ID não encontrado';
+			loading = false;
+			return;
+		}
+
 		try {
-			await api.put(`/professores/${page.params.id}`, formData);
-			goto(`/professores/${page.params.id}`);
+			await api.put(`/professores/${id}`, formData);
+			goto(`/professores/${id}`);
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao atualizar professor';
 		} finally {
@@ -50,7 +63,7 @@
 
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
-		<a href={`/professores/${page.params.id}`} class="text-gray-600 hover:text-gray-900">
+		<a href={`/professores/${$page.params?.id || ''}`} class="text-gray-600 hover:text-gray-900">
 			<ArrowLeft size={24} />
 		</a>
 		<h1 class="text-3xl font-bold text-gray-900">Editar Professor</h1>
@@ -111,7 +124,7 @@
 
 			<div class="flex justify-end gap-4">
 				<a 
-					href={`/professores/${page.params.id}`}
+					href={`/professores/${$page.params?.id || ''}`}
 					class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
 				>
 					Cancelar

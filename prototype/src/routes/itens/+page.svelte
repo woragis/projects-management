@@ -37,6 +37,14 @@
 		}
 	}
 
+	function handleViewItem(id: string) {
+		goto(`/itens/${id}`);
+	}
+
+	function handleEditItem(id: string) {
+		goto(`/itens/${id}/editar`);
+	}
+
 	onMount(() => {
 		loadItens();
 	});
@@ -138,20 +146,26 @@
 							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 								<div class="flex justify-end gap-2">
 									<button 
-										onclick={() => goto(`/itens/${item.id}`)}
-										class="text-blue-600 hover:text-blue-900"
+										type="button"
+										onclick={(e) => { e.preventDefault(); e.stopPropagation(); handleViewItem(item.id); }}
+										class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition cursor-pointer"
+										title="Ver detalhes"
 									>
 										<Eye size={18} />
 									</button>
 									<button 
-										onclick={() => goto(`/itens/${item.id}/editar`)}
-										class="text-green-600 hover:text-green-900"
+										type="button"
+										onclick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditItem(item.id); }}
+										class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded transition cursor-pointer"
+										title="Editar"
 									>
 										<Edit size={18} />
 									</button>
 									<button 
-										onclick={() => deleteItem(item.id)}
-										class="text-red-600 hover:text-red-900"
+										type="button"
+										onclick={(e) => { e.preventDefault(); e.stopPropagation(); deleteItem(item.id); }}
+										class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition cursor-pointer"
+										title="Excluir"
 									>
 										<Trash2 size={18} />
 									</button>

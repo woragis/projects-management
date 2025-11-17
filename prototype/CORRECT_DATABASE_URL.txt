@@ -1,0 +1,17 @@
+CORRECT DATABASE_URL FOR VERCEL:
+
+postgresql://postgres:fYpUiNYTWrWlfwBqlKxMmdVirHzSEcXm@hopper.proxy.rlwy.net:35878/railway
+
+BREAKDOWN:
+- Protocol: postgresql://
+- User: postgres
+- Password: fYpUiNYTWrWlfwBqlKxMmdVirHzSEcXm
+- Host: hopper.proxy.rlwy.net (TCP Proxy, NOT the service domain)
+- Port: 35878 (TCP Proxy port)
+- Database: railway
+
+DO NOT USE:
+- postgres-production-ee1e.up.railway.app (this is the service domain, only works inside Railway)
+- Missing postgresql:// prefix
+- Missing port number
+

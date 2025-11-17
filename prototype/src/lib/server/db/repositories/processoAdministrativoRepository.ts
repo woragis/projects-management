@@ -41,9 +41,8 @@ export class ProcessoAdministrativoRepository {
 			.values({
 				...data,
 				arquivos: data.arquivos ? JSON.stringify(data.arquivos) : null,
-				status: 'aberto',
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				status: 'aberto'
+				// createdAt and updatedAt are handled by .defaultNow() in the schema
 			})
 			.returning();
 		return result;
@@ -204,7 +203,7 @@ export class ProcessoAdministrativoRepository {
 			.set({
 				...data,
 				arquivos: data.arquivos ? JSON.stringify(data.arquivos) : undefined,
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(eq(processoAdministrativo.id, id))
 			.returning();

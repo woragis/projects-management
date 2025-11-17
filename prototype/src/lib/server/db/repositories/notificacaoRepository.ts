@@ -39,9 +39,8 @@ export class NotificacaoRepository {
 			.values({
 				...data,
 				status: 'pendente',
-				tentativas: 0,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				tentativas: 0
+				// createdAt and updatedAt are handled by .defaultNow() in the schema
 			})
 			.returning();
 		return result;
@@ -217,7 +216,7 @@ export class NotificacaoRepository {
 			.update(notificacao)
 			.set({
 				...data,
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(eq(notificacao.id, id))
 			.returning();

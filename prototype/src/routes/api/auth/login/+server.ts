@@ -1,27 +1,42 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { usuarioRepository } from '$lib/server/db/repositories';
+import { normalizeCpf } from '$lib/server/utils/cpf';
+import bcrypt from 'bcrypt';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const body = await request.json();
 		const { cpf, senha } = body;
 
+		console.log('🔍 LOGIN - Raw input:', { cpf, cpfType: typeof cpf });
+
 		if (!cpf || !senha) {
 			return json({ error: 'CPF e senha são obrigatórios' }, { status: 400 });
 		}
 
+		// Normalizar CPF (remover formatação)
+		const normalizedCpf = normalizeCpf(cpf);
+
+		console.log('🔍 LOGIN - Normalized CPF:', { normalizedCpf });
+
 		// Buscar usuário por CPF
-		const usuario = await usuarioRepository.findByCpf(cpf);
+		const usuario = await usuarioRepository.findByCpf(normalizedCpf);
+
+		console.log('🔍 LOGIN - User found:', usuario ? { id: usuario.id, cpf: usuario.cpf } : 'NOT FOUND');
 
 		if (!usuario) {
 			return json({ error: 'CPF ou senha inválidos' }, { status: 401 });
 		}
 
-		// TODO: Verificar senha (por enquanto, apenas validação básica)
-		// Em produção, usar bcrypt ou similar
-		// Por enquanto, vamos usar um sistema simples: senha = CPF para desenvolvimento
-		if (senha !== cpf) {
+		// Verificar senha
+		if (!usuario.senhaHash) {
+			return json({ error: 'Usuário sem senha cadastrada. Por favor, redefina sua senha.' }, { status: 401 });
+		}
+
+		const senhaValida = await bcrypt.compare(senha, usuario.senhaHash);
+
+		if (!senhaValida) {
 			return json({ error: 'CPF ou senha inválidos' }, { status: 401 });
 		}
 

@@ -4,6 +4,7 @@
 	import { ArrowLeft, CheckCircle } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { formatCurrency, formatDate } from '$lib/utils/format';
 
 	let processo = $state<any>(null);
 	let loading = $state(true);
@@ -18,9 +19,15 @@
 			return;
 		}
 		
+		const id = $page.params?.id;
+		if (!id) {
+			alert('ID não encontrado');
+			return;
+		}
+		
 		resolvendo = true;
 		try {
-			await api.post(`/processos-administrativos/${page.params.id}/resolver`, {
+			await api.post(`/processos-administrativos/${id}/resolver`, {
 				resultado,
 				valorMulta: valorMulta ? Math.round(parseFloat(valorMulta) * 100) : undefined
 			});
@@ -36,8 +43,14 @@
 
 	async function loadProcesso() {
 		loading = true;
+		const id = $page.params?.id;
+		if (!id) {
+			error = 'ID não encontrado';
+			loading = false;
+			return;
+		}
 		try {
-			const response = await api.get(`/processos-administrativos/${page.params.id}`);
+			const response = await api.get(`/processos-administrativos/${id}`);
 			processo = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar processo';
@@ -90,19 +103,19 @@
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-500 mb-1">Cliente</label>
-					<p class="text-lg text-gray-900">{processo.cliente?.nomeCompleto}</p>
+					<label class="block text-sm font-medium text-gray-500 mb-1">Usuário</label>
+					<p class="text-lg text-gray-900">{processo.usuario?.nomeCompleto}</p>
 				</div>
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">Data Ocorrência</label>
-					<p class="text-lg text-gray-900">{new Date(processo.processo.dataOcorrencia).toLocaleDateString('pt-BR')}</p>
+					<p class="text-lg text-gray-900">{formatDate(processo.processo.dataOcorrencia)}</p>
 				</div>
 
 				{#if processo.processo.dataResolucao}
 					<div>
 						<label class="block text-sm font-medium text-gray-500 mb-1">Data Resolução</label>
-						<p class="text-lg text-gray-900">{new Date(processo.processo.dataResolucao).toLocaleDateString('pt-BR')}</p>
+						<p class="text-lg text-gray-900">{formatDate(processo.processo.dataResolucao)}</p>
 					</div>
 				{/if}
 
@@ -116,7 +129,7 @@
 				{#if processo.processo.valorMulta}
 					<div>
 						<label class="block text-sm font-medium text-gray-500 mb-1">Valor da Multa</label>
-						<p class="text-lg text-gray-900">R$ {(processo.processo.valorMulta / 100).toFixed(2)}</p>
+						<p class="text-lg text-gray-900 font-semibold text-green-600">{formatCurrency(processo.processo.valorMulta)}</p>
 					</div>
 				{/if}
 

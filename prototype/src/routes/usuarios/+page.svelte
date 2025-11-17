@@ -4,6 +4,7 @@
 	import { Plus, Search, Edit, Trash2, Eye, UserCheck } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { authStore, type User } from '$lib/stores/auth';
+	import { formatCPF } from '$lib/utils/format';
 
 	let usuarios = $state<any[]>([]);
 	let loading = $state(true);
@@ -24,7 +25,7 @@
 		try {
 			const params: any = {};
 			if (searchTerm) params.nome = searchTerm;
-			const response = await api.get('/clientes', { params });
+			const response = await api.get('/usuarios', { params });
 			usuarios = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar usuários';
@@ -37,7 +38,7 @@
 		if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
 		
 		try {
-			await api.delete(`/clientes/${id}`);
+			await api.delete(`/usuarios/${id}`);
 			await loadUsuarios();
 		} catch (err: any) {
 			alert(err.response?.data?.error || 'Erro ao excluir usuário');
@@ -129,7 +130,7 @@
 										</div>
 									</div>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.cpf}</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{formatCPF(usuario.cpf)}</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email || '-'}</td>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {getRoleBadge(usuario.role).class}">

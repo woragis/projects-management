@@ -48,9 +48,8 @@ export class ItemRepository {
 				...data,
 				tags: data.tags ? JSON.stringify(data.tags) : null,
 				disponivel: data.disponivel ?? true,
-				condicao: data.condicao ?? 'bom',
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				condicao: data.condicao ?? 'bom'
+				// createdAt and updatedAt are handled by .defaultNow() in the schema
 			})
 			.returning();
 		return result;
@@ -190,7 +189,7 @@ export class ItemRepository {
 			.set({
 				...data,
 				tags: data.tags ? JSON.stringify(data.tags) : undefined,
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(eq(item.id, id))
 			.returning();

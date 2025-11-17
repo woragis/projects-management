@@ -82,7 +82,7 @@
 		error = null;
 
 		try {
-			const result = await uploadFile(selectedFile, 'cliente');
+			const result = await uploadFile(selectedFile, 'usuario');
 			if (result.success && result.url) {
 				formData.fotoPerfil = result.url;
 				selectedFile = null;

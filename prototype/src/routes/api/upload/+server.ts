@@ -4,11 +4,21 @@ import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
-// A pasta static está na raiz do projeto
-const uploadsDir = path.join(process.cwd(), 'static', 'uploads');
+// Detectar se estamos no Vercel
+const isVercel = process.env.VERCEL === '1';
+
+// Para Vercel, usar /tmp (único diretório gravável)
+// Para desenvolvimento local, usar static/uploads
+const getUploadsDir = () => {
+	if (isVercel) {
+		return path.join('/tmp', 'uploads');
+	}
+	return path.join(process.cwd(), 'static', 'uploads');
+};
 
 // Garantir que o diretório de uploads existe
 async function ensureUploadsDir() {
+	const uploadsDir = getUploadsDir();
 	if (!existsSync(uploadsDir)) {
 		await mkdir(uploadsDir, { recursive: true });
 	}
@@ -20,7 +30,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const formData = await request.formData();
 		const file = formData.get('file') as File;
-		const type = formData.get('type') as string || 'general'; // 'cliente', 'item', 'general'
+		const type = formData.get('type') as string || 'general'; // 'usuario', 'item', 'general'
 
 		if (!file) {
 			return json({ error: 'Nenhum arquivo fornecido' }, { status: 400 });
@@ -42,6 +52,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		const randomString = Math.random().toString(36).substring(2, 15);
 		const extension = file.name.split('.').pop();
 		const fileName = `${type}_${timestamp}_${randomString}.${extension}`;
+		
+		const uploadsDir = getUploadsDir();
 		const filePath = path.join(uploadsDir, fileName);
 
 		// Salvar arquivo
@@ -49,8 +61,19 @@ export const POST: RequestHandler = async ({ request }) => {
 		const buffer = Buffer.from(bytes);
 		await writeFile(filePath, buffer);
 
-		// Retornar URL do arquivo
-		const fileUrl = `/uploads/${fileName}`;
+		// Para Vercel, converter para base64 e retornar como data URL
+		// Para desenvolvimento local, retornar URL do arquivo
+		let fileUrl: string;
+		if (isVercel) {
+			// No Vercel, arquivos em /tmp não são acessíveis via HTTP
+			// Converter para base64 data URL
+			const base64 = buffer.toString('base64');
+			const mimeType = file.type || 'image/jpeg';
+			fileUrl = `data:${mimeType};base64,${base64}`;
+		} else {
+			// Em desenvolvimento local, usar URL relativa
+			fileUrl = `/uploads/${fileName}`;
+		}
 
 		return json({ 
 			success: true,

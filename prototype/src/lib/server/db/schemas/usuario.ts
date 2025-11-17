@@ -1,8 +1,10 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, boolean, timestamp, pgEnum } from 'drizzle-orm/pg-core';
 
 export type UserRole = 'super_admin' | 'admin' | 'professor' | 'aluno';
 
-export const usuario = sqliteTable('usuario', {
+export const userRoleEnum = pgEnum('user_role', ['super_admin', 'admin', 'professor', 'aluno']);
+
+export const usuario = pgTable('usuario', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -15,16 +17,17 @@ export const usuario = sqliteTable('usuario', {
 	telefone: text('telefone'),
 	whatsapp: text('whatsapp'),
 	endereco: text('endereco'),
-	role: text('role', { enum: ['super_admin', 'admin', 'professor', 'aluno'] })
+	senhaHash: text('senha_hash'),
+	role: userRoleEnum('role')
 		.notNull()
-		.$defaultFn(() => 'aluno' as UserRole),
-	solicitacaoProfessor: integer('solicitacao_professor', { mode: 'boolean' })
+		.default('aluno'),
+	solicitacaoProfessor: boolean('solicitacao_professor')
 		.notNull()
 		.default(false), // Aluno pediu para virar professor
-	createdAt: text('created_at')
+	createdAt: timestamp('created_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	updatedAt: text('updated_at')
+		.defaultNow(),
+	updatedAt: timestamp('updated_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString())
+		.defaultNow()
 });

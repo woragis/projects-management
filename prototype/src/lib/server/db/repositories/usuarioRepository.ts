@@ -1,6 +1,8 @@
 import { db } from '../index';
 import { usuario, type UserRole } from '../schemas/usuario';
 import { eq, and, or, like, desc, asc, count } from 'drizzle-orm';
+import { DatabaseError } from '../../errors';
+import { normalizeCpf } from '../../utils/cpf';
 
 export interface UsuarioCreateInput {
 	cpf: string;
@@ -12,7 +14,8 @@ export interface UsuarioCreateInput {
 	telefone?: string;
 	whatsapp?: string;
 	endereco?: string;
-	role?: UserRole; // Se não especificado, será 'aluno'
+	senhaHash?: string | null;
+	role?: UserRole;
 }
 
 export interface UsuarioUpdateInput {
@@ -54,9 +57,8 @@ export class UsuarioRepository {
 			.values({
 				...data,
 				role,
-				solicitacaoProfessor: false,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				solicitacaoProfessor: false
+				// createdAt and updatedAt are handled by .defaultNow() in the schema
 			})
 			.returning();
 		return result;
@@ -68,13 +70,34 @@ export class UsuarioRepository {
 	}
 
 	async findByCpf(cpf: string) {
-		const [result] = await db.select().from(usuario).where(eq(usuario.cpf, cpf)).limit(1);
-		return result;
+		try {
+			// Normalizar CPF antes de buscar (remove formatação)
+			const normalizedCpf = normalizeCpf(cpf);
+			console.log('🔍 REPOSITORY findByCpf - Input:', { original: cpf, normalized: normalizedCpf });
+			
+			const result = await db.select().from(usuario).where(eq(usuario.cpf, normalizedCpf)).limit(1);
+			
+			if (result[0]) {
+				console.log('🔍 REPOSITORY findByCpf - Found:', { id: result[0].id, cpfInDb: result[0].cpf });
+			} else {
+				console.log('🔍 REPOSITORY findByCpf - Not found, searching for:', normalizedCpf);
+			}
+			
+			return result[0];
+		} catch (error: any) {
+			console.error('❌ DATABASE ERROR in findByCpf:', error);
+			throw new DatabaseError(error, 'findByCpf');
+		}
 	}
 
 	async findByRg(rg: string) {
-		const [result] = await db.select().from(usuario).where(eq(usuario.rg, rg)).limit(1);
-		return result;
+		try {
+			const result = await db.select().from(usuario).where(eq(usuario.rg, rg)).limit(1);
+			return result[0];
+		} catch (error: any) {
+			console.error('❌ DATABASE ERROR in findByRg:', error);
+			throw new DatabaseError(error, 'findByRg');
+		}
 	}
 
 	async findByRole(role: UserRole) {
@@ -212,7 +235,7 @@ export class UsuarioRepository {
 			.update(usuario)
 			.set({
 				...data,
-				updatedAt: new Date().toISOString()
+				updatedAt: new Date() // Use Date object, not ISO string
 			})
 			.where(eq(usuario.id, id))
 			.returning();

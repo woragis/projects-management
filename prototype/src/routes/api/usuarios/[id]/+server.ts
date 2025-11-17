@@ -38,3 +38,4 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		return json({ error: error.message }, { status: 500 });
 	}
 };
+

@@ -7,7 +7,7 @@ export interface UploadResult {
 	error?: string;
 }
 
-export async function uploadFile(file: File, type: 'cliente' | 'item' | 'general' = 'general'): Promise<UploadResult> {
+export async function uploadFile(file: File, type: 'usuario' | 'item' | 'general' = 'general'): Promise<UploadResult> {
 	try {
 		const formData = new FormData();
 		formData.append('file', file);

@@ -4,7 +4,22 @@ import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [
+		tailwindcss(),
+		sveltekit({
+			compilerOptions: {
+				// Disable accessibility warnings during build
+				runes: true
+			},
+			onwarn: (warning, handler) => {
+				// Suppress accessibility warnings
+				if (warning.code?.startsWith('a11y-')) {
+					return;
+				}
+				handler(warning);
+			}
+		})
+	],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

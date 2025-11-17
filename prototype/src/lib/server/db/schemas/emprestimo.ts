@@ -1,11 +1,11 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { usuario } from './usuario';
 import { professor } from './professor';
 import { item } from './item';
 import { processoAdministrativo } from './processoAdministrativo';
 
-export const emprestimo = sqliteTable('emprestimo', {
+export const emprestimo = pgTable('emprestimo', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -33,12 +33,12 @@ export const emprestimo = sqliteTable('emprestimo', {
 	salaQuePegou: text('sala_que_pegou'), // Sala onde foi retirado
 	localizacaoAtual: text('localizacao_atual'), // Onde está atualmente
 	observacoes: text('observacoes'),
-	createdAt: text('created_at')
+	createdAt: timestamp('created_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	updatedAt: text('updated_at')
+		.defaultNow(),
+	updatedAt: timestamp('updated_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString())
+		.defaultNow()
 });
 
 export const emprestimoRelations = relations(emprestimo, ({ one, many }) => ({

@@ -1,9 +1,9 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { emprestimo } from './emprestimo';
 import { usuario } from './usuario';
 
-export const processoAdministrativo = sqliteTable('processo_administrativo', {
+export const processoAdministrativo = pgTable('processo_administrativo', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -23,12 +23,12 @@ export const processoAdministrativo = sqliteTable('processo_administrativo', {
 	dataResolucao: text('data_resolucao'),
 	observacoes: text('observacoes'),
 	arquivos: text('arquivos'), // JSON array de URLs/paths de documentos
-	createdAt: text('created_at')
+	createdAt: timestamp('created_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	updatedAt: text('updated_at')
+		.defaultNow(),
+	updatedAt: timestamp('updated_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString())
+		.defaultNow()
 });
 
 export const processoAdministrativoRelations = relations(processoAdministrativo, ({ one }) => ({

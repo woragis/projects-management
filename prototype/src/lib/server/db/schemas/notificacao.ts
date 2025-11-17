@@ -1,9 +1,9 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { usuario } from './usuario';
 import { emprestimo } from './emprestimo';
 
-export const notificacao = sqliteTable('notificacao', {
+export const notificacao = pgTable('notificacao', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -21,12 +21,12 @@ export const notificacao = sqliteTable('notificacao', {
 	dataAgendamento: text('data_agendamento').notNull(), // ISO date string - quando deveria ser enviada
 	tentativas: integer('tentativas').notNull().default(0),
 	erro: text('erro'), // Mensagem de erro se houver falha
-	createdAt: text('created_at')
+	createdAt: timestamp('created_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	updatedAt: text('updated_at')
+		.defaultNow(),
+	updatedAt: timestamp('updated_at')
 		.notNull()
-		.$defaultFn(() => new Date().toISOString())
+		.defaultNow()
 });
 
 export const notificacaoRelations = relations(notificacao, ({ one }) => ({

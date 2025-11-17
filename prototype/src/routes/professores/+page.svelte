@@ -3,6 +3,7 @@
 	import api from '$lib/api/client';
 	import { Plus, Search, Edit, Trash2, Eye } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { formatCPF } from '$lib/utils/format';
 
 	let professores = $state<any[]>([]);
 	let loading = $state(true);
@@ -85,6 +86,7 @@
 				<thead class="bg-gray-50">
 					<tr>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CPF</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrícula</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departamento</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
@@ -96,7 +98,10 @@
 					{#each professores as prof}
 						<tr class="hover:bg-gray-50">
 							<td class="px-6 py-4 whitespace-nowrap">
-								<div class="text-sm font-medium text-gray-900">{prof.cliente?.nomeCompleto || '-'}</div>
+								<div class="text-sm font-medium text-gray-900">{prof?.usuario?.nomeCompleto || 'Não informado'}</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="text-sm text-gray-500 font-mono">{prof?.usuario?.cpf ? formatCPF(prof.usuario.cpf) : '-'}</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
 								<div class="text-sm text-gray-500">{prof.professor?.matricula}</div>
@@ -116,19 +121,22 @@
 								<div class="flex justify-end gap-2">
 									<button 
 										onclick={() => goto(`/professores/${prof.professor.id}`)}
-										class="text-blue-600 hover:text-blue-900"
+										class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition"
+										title="Ver detalhes"
 									>
 										<Eye size={18} />
 									</button>
 									<button 
 										onclick={() => goto(`/professores/${prof.professor.id}/editar`)}
-										class="text-green-600 hover:text-green-900"
+										class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded transition"
+										title="Editar"
 									>
 										<Edit size={18} />
 									</button>
 									<button 
 										onclick={() => deleteProfessor(prof.professor.id)}
-										class="text-red-600 hover:text-red-900"
+										class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition"
+										title="Excluir"
 									>
 										<Trash2 size={18} />
 									</button>

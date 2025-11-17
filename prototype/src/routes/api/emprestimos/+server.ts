@@ -8,9 +8,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		const itemId = url.searchParams.get('itemId');
 		const professorAutorizadorId = url.searchParams.get('professorAutorizadorId');
 		const status = url.searchParams.get('status') as any;
+		const statusAprovacao = url.searchParams.get('statusAprovacao') as any;
 		const dataInicioInicio = url.searchParams.get('dataInicioInicio');
 		const dataInicioFim = url.searchParams.get('dataInicioFim');
 		const atrasados = url.searchParams.get('atrasados') === 'true';
+		const search = url.searchParams.get('search');
 		const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : undefined;
 		const offset = url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : undefined;
 		const sortBy = url.searchParams.get('sortBy') as any;
@@ -21,9 +23,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			itemId: itemId || undefined,
 			professorAutorizadorId: professorAutorizadorId || undefined,
 			status,
+			statusAprovacao: statusAprovacao || undefined,
 			dataInicioInicio: dataInicioInicio || undefined,
 			dataInicioFim: dataInicioFim || undefined,
 			atrasados: atrasados || undefined,
+			search: search || undefined,
 			limit,
 			offset,
 			sortBy,
@@ -35,9 +39,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			itemId: itemId || undefined,
 			professorAutorizadorId: professorAutorizadorId || undefined,
 			status,
+			statusAprovacao: statusAprovacao || undefined,
 			dataInicioInicio: dataInicioInicio || undefined,
 			dataInicioFim: dataInicioFim || undefined,
-			atrasados: atrasados || undefined
+			atrasados: atrasados || undefined,
+			search: search || undefined
 		});
 
 		return json({ data: emprestimos, total });

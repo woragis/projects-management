@@ -4,6 +4,7 @@
 	import { ArrowLeft, Edit } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { formatCPF } from '$lib/utils/format';
 
 	let professor = $state<any>(null);
 	let loading = $state(true);
@@ -11,7 +12,13 @@
 
 	onMount(async () => {
 		try {
-			const response = await api.get(`/professores/${page.params.id}`);
+			const id = $page.params?.id;
+			if (!id) {
+				error = 'ID não encontrado';
+				loading = false;
+				return;
+			}
+			const response = await api.get(`/professores/${id}`);
 			professor = response.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar professor';
@@ -28,7 +35,7 @@
 		</a>
 		<h1 class="text-3xl font-bold text-gray-900">Detalhes do Professor</h1>
 		<a 
-			href={`/professores/${page.params.id}/editar`}
+			href={`/professores/${$page.params?.id || ''}/editar`}
 			class="ml-auto flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
 		>
 			<Edit size={20} />
@@ -50,12 +57,12 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">Nome Completo</label>
-					<p class="text-lg font-semibold text-gray-900">{professor.cliente?.nomeCompleto}</p>
+					<p class="text-lg font-semibold text-gray-900">{professor?.usuario?.nomeCompleto || 'Não informado'}</p>
 				</div>
 
 				<div>
 					<label class="block text-sm font-medium text-gray-500 mb-1">CPF</label>
-					<p class="text-lg text-gray-900">{professor.cliente?.cpf}</p>
+					<p class="text-lg text-gray-900 font-mono">{professor?.usuario?.cpf ? formatCPF(professor.usuario.cpf) : 'Não informado'}</p>
 				</div>
 
 				<div>

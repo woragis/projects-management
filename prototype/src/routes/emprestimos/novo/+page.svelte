@@ -3,6 +3,7 @@
 	import api from '$lib/api/client';
 	import { ArrowLeft, Save } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { formatCPF } from '$lib/utils/format';
 
 	let formData = $state({
 		itemId: '',
@@ -17,7 +18,7 @@
 	});
 
 	let itens = $state<any[]>([]);
-	let clientes = $state<any[]>([]);
+	let usuarios = $state<any[]>([]);
 	let professores = $state<any[]>([]);
 	let loading = $state(false);
 	let loadingData = $state(true);
@@ -25,13 +26,13 @@
 
 	onMount(async () => {
 		try {
-			const [itensRes, clientesRes, professoresRes] = await Promise.all([
+			const [itensRes, usuariosRes, professoresRes] = await Promise.all([
 				api.get('/itens/disponiveis'),
-				api.get('/clientes'),
+				api.get('/usuarios'),
 				api.get('/professores')
 			]);
 			itens = itensRes.data.data;
-			clientes = clientesRes.data.data;
+			usuarios = usuariosRes.data.data;
 			professores = professoresRes.data.data;
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao carregar dados';
@@ -101,9 +102,9 @@
 						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 						bind:value={formData.solicitanteId}
 					>
-						<option value="">Selecione um cliente</option>
-						{#each clientes as cliente}
-							<option value={cliente.id}>{cliente.nomeCompleto} - {cliente.cpf}</option>
+						<option value="">Selecione um usuário</option>
+						{#each usuarios as usuario}
+							<option value={usuario.id}>{usuario.nomeCompleto} - {formatCPF(usuario.cpf)}</option>
 						{/each}
 					</select>
 				</div>
@@ -116,7 +117,7 @@
 					>
 						<option value="">Selecione um professor</option>
 						{#each professores as prof}
-							<option value={prof.professor.id}>{prof.cliente.nomeCompleto}</option>
+							<option value={prof.professor.id}>{prof.usuario.nomeCompleto}</option>
 						{/each}
 					</select>
 				</div>

@@ -43,7 +43,25 @@ export const GET: RequestHandler = async ({ url }) => {
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const body = await request.json();
-		const professor = await professorRepository.create(body);
+		
+		// Validar que usuarioId foi fornecido
+		if (!body.usuarioId) {
+			return json({ error: 'usuarioId é obrigatório' }, { status: 400 });
+		}
+		
+		const data = {
+			usuarioId: body.usuarioId,
+			matricula: body.matricula,
+			departamento: body.departamento,
+			cargo: body.cargo,
+			ativo: body.ativo ?? true
+		};
+		
+		if (!data.matricula) {
+			return json({ error: 'Matrícula é obrigatória' }, { status: 400 });
+		}
+		
+		const professor = await professorRepository.create(data);
 		return json({ data: professor }, { status: 201 });
 	} catch (error: any) {
 		return json({ error: error.message }, { status: 400 });

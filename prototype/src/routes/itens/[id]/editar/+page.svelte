@@ -28,7 +28,13 @@
 
 	onMount(async () => {
 		try {
-			const response = await api.get(`/itens/${page.params.id}`);
+			const id = $page.params?.id;
+			if (!id) {
+				error = 'ID não encontrado';
+				loadingData = false;
+				return;
+			}
+			const response = await api.get(`/itens/${id}`);
 			const item = response.data.data;
 			formData = {
 				nome: item.nome || '',
@@ -120,9 +126,15 @@
 		loading = true;
 		error = null;
 
+		const id = $page.params?.id;
+		if (!id) {
+			error = 'ID não encontrado';
+			loading = false;
+			return;
+		}
 		try {
-			await api.put(`/itens/${page.params.id}`, formData);
-			goto(`/itens/${page.params.id}`);
+			await api.put(`/itens/${id}`, formData);
+			goto(`/itens/${id}`);
 		} catch (err: any) {
 			error = err.response?.data?.error || 'Erro ao atualizar item';
 		} finally {
@@ -133,7 +145,7 @@
 
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
-		<a href={`/itens/${page.params.id}`} class="text-gray-600 hover:text-gray-900">
+		<a href={`/itens/${$page.params?.id || ''}`} class="text-gray-600 hover:text-gray-900">
 			<ArrowLeft size={24} />
 		</a>
 		<h1 class="text-3xl font-bold text-gray-900">Editar Item</h1>
@@ -313,7 +325,7 @@
 
 			<div class="flex justify-end gap-4">
 				<a 
-					href={`/itens/${page.params.id}`}
+					href={`/itens/${$page.params?.id || ''}`}
 					class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
 				>
 					Cancelar

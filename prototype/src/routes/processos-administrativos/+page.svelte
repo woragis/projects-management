@@ -3,6 +3,7 @@
 	import api from '$lib/api/client';
 	import { Plus, FileText, AlertCircle, CheckCircle, Eye } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { formatCurrency, formatDate } from '$lib/utils/format';
 
 	let processos = $state<any[]>([]);
 	let loading = $state(true);
@@ -80,7 +81,7 @@
 							<h3 class="text-lg font-semibold text-gray-900 capitalize">
 								{proc.processo.tipo.replace('_', ' ')}
 							</h3>
-							<p class="text-sm text-gray-500">{proc.cliente?.nomeCompleto}</p>
+							<p class="text-sm text-gray-500">{proc.usuario?.nomeCompleto}</p>
 						</div>
 						<span class="px-2 py-1 text-xs font-semibold rounded-full {
 							proc.processo.status === 'aberto' ? 'bg-yellow-100 text-yellow-800' :
@@ -95,15 +96,15 @@
 					</div>
 
 					<div class="space-y-2 text-sm text-gray-600 mb-4">
-						<p><strong>Data Ocorrência:</strong> {new Date(proc.processo.dataOcorrencia).toLocaleDateString('pt-BR')}</p>
+						<p><strong>Data Ocorrência:</strong> {formatDate(proc.processo.dataOcorrencia)}</p>
 						{#if proc.processo.dataResolucao}
-							<p><strong>Data Resolução:</strong> {new Date(proc.processo.dataResolucao).toLocaleDateString('pt-BR')}</p>
+							<p><strong>Data Resolução:</strong> {formatDate(proc.processo.dataResolucao)}</p>
 						{/if}
 						{#if proc.processo.resultado}
 							<p><strong>Resultado:</strong> {proc.processo.resultado}</p>
 						{/if}
 						{#if proc.processo.valorMulta}
-							<p><strong>Multa:</strong> R$ {(proc.processo.valorMulta / 100).toFixed(2)}</p>
+							<p><strong>Multa:</strong> <span class="font-semibold text-green-600">{formatCurrency(proc.processo.valorMulta)}</span></p>
 						{/if}
 					</div>
 
