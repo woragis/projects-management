@@ -1,0 +1,356 @@
+import { db } from '../index';
+import { emprestimo, item, cliente, professor } from '../schemas';
+import { eq, and, desc, asc, count, gte, lte, sql } from 'drizzle-orm';
+
+export interface EmprestimoCreateInput {
+	itemId: string;
+	solicitanteId: string;
+	professorAutorizadorId?: string;
+	dataInicio: string;
+	dataDevolucaoPrevista: string;
+	pessoaQuePegou?: string;
+	salaQuePegou?: string;
+	localizacaoAtual?: string;
+	observacoes?: string;
+}
+
+export interface EmprestimoUpdateInput {
+	itemId?: string;
+	dataDevolucaoPrevista?: string;
+	dataDevolucaoReal?: string;
+	status?: 'ativo' | 'devolvido' | 'atrasado' | 'cancelado';
+	pessoaQuePegou?: string;
+	salaQuePegou?: string;
+	localizacaoAtual?: string;
+	observacoes?: string;
+}
+
+export interface EmprestimoFilters {
+	solicitanteId?: string;
+	itemId?: string;
+	professorAutorizadorId?: string;
+	status?: 'ativo' | 'devolvido' | 'atrasado' | 'cancelado';
+	dataInicioInicio?: string; // data inicial do período
+	dataInicioFim?: string; // data final do período
+	atrasados?: boolean; // apenas emprestimos atrasados
+	limit?: number;
+	offset?: number;
+	sortBy?: 'dataInicio' | 'dataDevolucaoPrevista' | 'createdAt';
+	sortOrder?: 'asc' | 'desc';
+}
+
+export class EmprestimoRepository {
+	async create(data: EmprestimoCreateInput) {
+		const [result] = await db
+			.insert(emprestimo)
+			.values({
+				...data,
+				status: 'ativo',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			})
+			.returning();
+		return result;
+	}
+
+	async findById(id: string) {
+		const [result] = await db
+			.select({
+				emprestimo: emprestimo,
+				item: item,
+				solicitante: cliente,
+				professorAutorizador: professor
+			})
+			.from(emprestimo)
+			.innerJoin(item, eq(emprestimo.itemId, item.id))
+			.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+			.where(eq(emprestimo.id, id))
+			.limit(1);
+		return result;
+	}
+
+	async findBySolicitante(solicitanteId: string, apenasAtivos = false) {
+		const conditions = [eq(emprestimo.solicitanteId, solicitanteId)];
+
+		if (apenasAtivos) {
+			conditions.push(eq(emprestimo.status, 'ativo'));
+		}
+
+		return db
+			.select({
+				emprestimo: emprestimo,
+				item: item,
+				professorAutorizador: professor
+			})
+			.from(emprestimo)
+			.innerJoin(item, eq(emprestimo.itemId, item.id))
+			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+			.where(and(...conditions))
+			.orderBy(desc(emprestimo.dataInicio));
+	}
+
+	async countAtivosPorSolicitante(solicitanteId: string) {
+		const [result] = await db
+			.select({ count: count() })
+			.from(emprestimo)
+			.where(
+				and(
+					eq(emprestimo.solicitanteId, solicitanteId),
+					eq(emprestimo.status, 'ativo')
+				)
+			);
+		return result.count;
+	}
+
+	async findAll(filters?: EmprestimoFilters) {
+		const conditions = [];
+
+		if (filters?.solicitanteId) {
+			conditions.push(eq(emprestimo.solicitanteId, filters.solicitanteId));
+		}
+
+		if (filters?.itemId) {
+			conditions.push(eq(emprestimo.itemId, filters.itemId));
+		}
+
+		if (filters?.professorAutorizadorId) {
+			conditions.push(eq(emprestimo.professorAutorizadorId, filters.professorAutorizadorId));
+		}
+
+		if (filters?.status) {
+			conditions.push(eq(emprestimo.status, filters.status));
+		}
+
+		if (filters?.dataInicioInicio) {
+			conditions.push(gte(emprestimo.dataInicio, filters.dataInicioInicio));
+		}
+
+		if (filters?.dataInicioFim) {
+			conditions.push(lte(emprestimo.dataInicio, filters.dataInicioFim));
+		}
+
+		// Empréstimos atrasados: status ativo e data de devolução prevista < hoje
+		if (filters?.atrasados) {
+			const hoje = new Date().toISOString().split('T')[0];
+			conditions.push(
+				and(
+					eq(emprestimo.status, 'ativo'),
+					lte(emprestimo.dataDevolucaoPrevista, hoje)
+				)
+			);
+		}
+
+		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+		let query = db
+			.select({
+				emprestimo: emprestimo,
+				item: item,
+				solicitante: cliente,
+				professorAutorizador: professor
+			})
+			.from(emprestimo)
+			.innerJoin(item, eq(emprestimo.itemId, item.id))
+			.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id));
+
+		if (whereClause) {
+			query = query.where(whereClause);
+		}
+
+		// Sorting
+		if (filters?.sortBy) {
+			const sortColumn =
+				filters.sortBy === 'dataInicio'
+					? emprestimo.dataInicio
+					: filters.sortBy === 'dataDevolucaoPrevista'
+						? emprestimo.dataDevolucaoPrevista
+						: emprestimo.createdAt;
+
+			query = filters.sortOrder === 'desc' 
+				? query.orderBy(desc(sortColumn))
+				: query.orderBy(asc(sortColumn));
+		} else {
+			query = query.orderBy(desc(emprestimo.createdAt));
+		}
+
+		// Pagination
+		if (filters?.limit) {
+			query = query.limit(filters.limit);
+		}
+
+		if (filters?.offset) {
+			query = query.offset(filters.offset);
+		}
+
+		return query;
+	}
+
+	async findAtrasados() {
+		try {
+			const hoje = new Date().toISOString().split('T')[0];
+			return await db
+				.select({
+					emprestimo: emprestimo,
+					item: item,
+					solicitante: cliente,
+					professorAutorizador: professor
+				})
+				.from(emprestimo)
+				.innerJoin(item, eq(emprestimo.itemId, item.id))
+				.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+				.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+				.where(
+					and(
+						eq(emprestimo.status, 'ativo'),
+						lte(emprestimo.dataDevolucaoPrevista, hoje)
+					)
+				)
+				.orderBy(asc(emprestimo.dataDevolucaoPrevista));
+		} catch (error) {
+			console.error('Error finding atrasados:', error);
+			return [];
+		}
+	}
+
+	async findProximosAVencer(diasAntecedencia = 1) {
+		const dataLimite = new Date();
+		dataLimite.setDate(dataLimite.getDate() + diasAntecedencia);
+		const dataLimiteStr = dataLimite.toISOString().split('T')[0];
+
+		const hoje = new Date().toISOString().split('T')[0];
+
+		return db
+			.select({
+				emprestimo: emprestimo,
+				item: item,
+				solicitante: cliente,
+				professorAutorizador: professor
+			})
+			.from(emprestimo)
+			.innerJoin(item, eq(emprestimo.itemId, item.id))
+			.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
+			.where(
+				and(
+					eq(emprestimo.status, 'ativo'),
+					gte(emprestimo.dataDevolucaoPrevista, hoje),
+					lte(emprestimo.dataDevolucaoPrevista, dataLimiteStr)
+				)
+			)
+			.orderBy(asc(emprestimo.dataDevolucaoPrevista));
+	}
+
+	async count(filters?: Omit<EmprestimoFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'>) {
+		const conditions = [];
+
+		if (filters?.solicitanteId) {
+			conditions.push(eq(emprestimo.solicitanteId, filters.solicitanteId));
+		}
+
+		if (filters?.itemId) {
+			conditions.push(eq(emprestimo.itemId, filters.itemId));
+		}
+
+		if (filters?.professorAutorizadorId) {
+			conditions.push(eq(emprestimo.professorAutorizadorId, filters.professorAutorizadorId));
+		}
+
+		if (filters?.status) {
+			conditions.push(eq(emprestimo.status, filters.status));
+		}
+
+		if (filters?.dataInicioInicio) {
+			conditions.push(gte(emprestimo.dataInicio, filters.dataInicioInicio));
+		}
+
+		if (filters?.dataInicioFim) {
+			conditions.push(lte(emprestimo.dataInicio, filters.dataInicioFim));
+		}
+
+		if (filters?.atrasados) {
+			const hoje = new Date().toISOString().split('T')[0];
+			conditions.push(
+				and(
+					eq(emprestimo.status, 'ativo'),
+					lte(emprestimo.dataDevolucaoPrevista, hoje)
+				)
+			);
+		}
+
+		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+		const [result] = await db
+			.select({ count: count() })
+			.from(emprestimo)
+			.where(whereClause);
+
+		return result.count;
+	}
+
+	async update(id: string, data: EmprestimoUpdateInput) {
+		const [result] = await db
+			.update(emprestimo)
+			.set({
+				...data,
+				updatedAt: new Date().toISOString()
+			})
+			.where(eq(emprestimo.id, id))
+			.returning();
+		return result;
+	}
+
+	async devolver(id: string, dataDevolucaoReal?: string) {
+		return this.update(id, {
+			status: 'devolvido',
+			dataDevolucaoReal: dataDevolucaoReal || new Date().toISOString()
+		});
+	}
+
+	async cancelar(id: string) {
+		return this.update(id, {
+			status: 'cancelado'
+		});
+	}
+
+	async marcarComoAtrasado(id: string) {
+		return this.update(id, {
+			status: 'atrasado'
+		});
+	}
+
+	async atualizarStatusAtrasados() {
+		const hoje = new Date().toISOString().split('T')[0];
+		const result = await db
+			.update(emprestimo)
+			.set({
+				status: 'atrasado',
+				updatedAt: new Date().toISOString()
+			})
+			.where(
+				and(
+					eq(emprestimo.status, 'ativo'),
+					lte(emprestimo.dataDevolucaoPrevista, hoje)
+				)
+			)
+			.returning();
+		return result;
+	}
+
+	async delete(id: string) {
+		const [result] = await db.delete(emprestimo).where(eq(emprestimo.id, id)).returning();
+		return result;
+	}
+
+	async exists(id: string) {
+		const [result] = await db
+			.select({ id: emprestimo.id })
+			.from(emprestimo)
+			.where(eq(emprestimo.id, id))
+			.limit(1);
+		return !!result;
+	}
+}
+
+export const emprestimoRepository = new EmprestimoRepository();
