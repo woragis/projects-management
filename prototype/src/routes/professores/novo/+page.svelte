@@ -80,8 +80,9 @@
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Matrícula *</label>
+					<label for="matricula" class="block text-sm font-medium text-gray-700 mb-2">Matrícula *</label>
 					<input 
+						id="matricula"
 						type="text" 
 						required
 						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -90,8 +91,9 @@
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
+					<label for="departamento" class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
 					<input 
+						id="departamento"
 						type="text" 
 						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 						bind:value={formData.departamento}
@@ -99,8 +101,9 @@
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+					<label for="cargo" class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
 					<input 
+						id="cargo"
 						type="text" 
 						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 						bind:value={formData.cargo}

@@ -1,10 +1,10 @@
 import { db } from '../index';
-import { processoAdministrativo, emprestimo, cliente } from '../schemas';
+import { processoAdministrativo, emprestimo, usuario } from '../schemas';
 import { eq, and, desc, asc, count, gte, lte } from 'drizzle-orm';
 
 export interface ProcessoAdministrativoCreateInput {
 	emprestimoId?: string;
-	clienteId: string;
+	usuarioId: string;
 	tipo: 'perda' | 'quebra' | 'mas_condicoes' | 'roubo';
 	descricao: string;
 	dataOcorrencia: string;
@@ -22,7 +22,7 @@ export interface ProcessoAdministrativoUpdateInput {
 }
 
 export interface ProcessoAdministrativoFilters {
-	clienteId?: string;
+	usuarioId?: string;
 	emprestimoId?: string;
 	tipo?: 'perda' | 'quebra' | 'mas_condicoes' | 'roubo';
 	status?: 'aberto' | 'em_andamento' | 'resolvido' | 'encaminhado_justica';
@@ -54,17 +54,17 @@ export class ProcessoAdministrativoRepository {
 			.select({
 				processo: processoAdministrativo,
 				emprestimo: emprestimo,
-				cliente: cliente
+				usuario: usuario
 			})
 			.from(processoAdministrativo)
-			.innerJoin(cliente, eq(processoAdministrativo.clienteId, cliente.id))
+			.innerJoin(usuario, eq(processoAdministrativo.usuarioId, usuario.id))
 			.leftJoin(emprestimo, eq(processoAdministrativo.emprestimoId, emprestimo.id))
 			.where(eq(processoAdministrativo.id, id))
 			.limit(1);
 		return result;
 	}
 
-	async findByCliente(clienteId: string) {
+	async findByUsuario(usuarioId: string) {
 		return db
 			.select({
 				processo: processoAdministrativo,
@@ -72,15 +72,15 @@ export class ProcessoAdministrativoRepository {
 			})
 			.from(processoAdministrativo)
 			.leftJoin(emprestimo, eq(processoAdministrativo.emprestimoId, emprestimo.id))
-			.where(eq(processoAdministrativo.clienteId, clienteId))
+			.where(eq(processoAdministrativo.usuarioId, usuarioId))
 			.orderBy(desc(processoAdministrativo.dataOcorrencia));
 	}
 
 	async findAll(filters?: ProcessoAdministrativoFilters) {
 		const conditions = [];
 
-		if (filters?.clienteId) {
-			conditions.push(eq(processoAdministrativo.clienteId, filters.clienteId));
+		if (filters?.usuarioId) {
+			conditions.push(eq(processoAdministrativo.usuarioId, filters.usuarioId));
 		}
 
 		if (filters?.emprestimoId) {
@@ -109,10 +109,10 @@ export class ProcessoAdministrativoRepository {
 			.select({
 				processo: processoAdministrativo,
 				emprestimo: emprestimo,
-				cliente: cliente
+				usuario: usuario
 			})
 			.from(processoAdministrativo)
-			.innerJoin(cliente, eq(processoAdministrativo.clienteId, cliente.id))
+			.innerJoin(usuario, eq(processoAdministrativo.usuarioId, usuario.id))
 			.leftJoin(emprestimo, eq(processoAdministrativo.emprestimoId, emprestimo.id));
 
 		if (whereClause) {
@@ -152,10 +152,10 @@ export class ProcessoAdministrativoRepository {
 			.select({
 				processo: processoAdministrativo,
 				emprestimo: emprestimo,
-				cliente: cliente
+				usuario: usuario
 			})
 			.from(processoAdministrativo)
-			.innerJoin(cliente, eq(processoAdministrativo.clienteId, cliente.id))
+			.innerJoin(usuario, eq(processoAdministrativo.usuarioId, usuario.id))
 			.leftJoin(emprestimo, eq(processoAdministrativo.emprestimoId, emprestimo.id))
 			.where(eq(processoAdministrativo.status, 'aberto'))
 			.orderBy(desc(processoAdministrativo.dataOcorrencia));
@@ -164,8 +164,8 @@ export class ProcessoAdministrativoRepository {
 	async count(filters?: Omit<ProcessoAdministrativoFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'>) {
 		const conditions = [];
 
-		if (filters?.clienteId) {
-			conditions.push(eq(processoAdministrativo.clienteId, filters.clienteId));
+		if (filters?.usuarioId) {
+			conditions.push(eq(processoAdministrativo.usuarioId, filters.usuarioId));
 		}
 
 		if (filters?.emprestimoId) {

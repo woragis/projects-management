@@ -1,5 +1,5 @@
 // Export all schemas and relations
-export * from './cliente';
+export * from './usuario';
 export * from './professor';
 export * from './item';
 export * from './emprestimo';

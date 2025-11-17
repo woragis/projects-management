@@ -1,14 +1,14 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
-import { cliente } from './cliente';
+import { usuario } from './usuario';
 
 export const professor = sqliteTable('professor', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	clienteId: text('cliente_id')
+	usuarioId: text('usuario_id')
 		.notNull()
-		.references(() => cliente.id, { onDelete: 'cascade' }),
+		.references(() => usuario.id, { onDelete: 'cascade' }),
 	matricula: text('matricula').notNull().unique(),
 	departamento: text('departamento'),
 	cargo: text('cargo'), // Ex: Professor Titular, Professor Adjunto, etc
@@ -22,8 +22,8 @@ export const professor = sqliteTable('professor', {
 });
 
 export const professorRelations = relations(professor, ({ one }) => ({
-	cliente: one(cliente, {
-		fields: [professor.clienteId],
-		references: [cliente.id]
+	usuario: one(usuario, {
+		fields: [professor.usuarioId],
+		references: [usuario.id]
 	})
 }));

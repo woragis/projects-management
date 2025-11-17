@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { 
-	clienteRepository, 
+	usuarioRepository, 
 	professorRepository, 
 	itemRepository, 
 	emprestimoRepository, 
@@ -12,7 +12,7 @@ import {
 export const GET: RequestHandler = async () => {
 	try {
 		const [
-			totalClientes,
+			totalUsuarios,
 			totalProfessores,
 			totalItens,
 			totalItensDisponiveis,
@@ -22,7 +22,7 @@ export const GET: RequestHandler = async () => {
 			notificacoesPendentes,
 			processosAbertos
 		] = await Promise.all([
-			clienteRepository.count().catch(() => 0),
+			usuarioRepository.count().catch(() => 0),
 			professorRepository.count({ ativo: true }).catch(() => 0),
 			itemRepository.count().catch(() => 0),
 			itemRepository.count({ disponivel: true }).catch(() => 0),
@@ -35,7 +35,7 @@ export const GET: RequestHandler = async () => {
 
 		return json({
 			data: {
-				totalClientes,
+				totalUsuarios,
 				totalProfessores,
 				totalItens,
 				totalItensDisponiveis,
@@ -52,7 +52,7 @@ export const GET: RequestHandler = async () => {
 		return json({ 
 			error: error.message,
 			data: {
-				totalClientes: 0,
+				totalUsuarios: 0,
 				totalProfessores: 0,
 				totalItens: 0,
 				totalItensDisponiveis: 0,

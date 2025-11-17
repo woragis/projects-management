@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
-import { cliente } from './cliente';
+import { usuario } from './usuario';
 import { professor } from './professor';
 import { item } from './item';
 import { processoAdministrativo } from './processoAdministrativo';
@@ -14,9 +14,14 @@ export const emprestimo = sqliteTable('emprestimo', {
 		.references(() => item.id, { onDelete: 'cascade' }),
 	solicitanteId: text('solicitante_id')
 		.notNull()
-		.references(() => cliente.id, { onDelete: 'cascade' }),
+		.references(() => usuario.id, { onDelete: 'cascade' }),
 	professorAutorizadorId: text('professor_autorizador_id')
 		.references(() => professor.id, { onDelete: 'set null' }),
+	statusAprovacao: text('status_aprovacao')
+		.notNull()
+		.default('pendente'), // pendente, aprovado, rejeitado
+	adminAprovadorId: text('admin_aprovador_id')
+		.references(() => usuario.id, { onDelete: 'set null' }),
 	dataInicio: text('data_inicio').notNull(), // ISO date string
 	dataDevolucaoPrevista: text('data_devolucao_prevista').notNull(), // ISO date string
 	dataDevolucaoReal: text('data_devolucao_real'),
@@ -41,14 +46,19 @@ export const emprestimoRelations = relations(emprestimo, ({ one, many }) => ({
 		fields: [emprestimo.itemId],
 		references: [item.id]
 	}),
-	solicitante: one(cliente, {
+	solicitante: one(usuario, {
 		fields: [emprestimo.solicitanteId],
-		references: [cliente.id]
+		references: [usuario.id]
 	}),
 	professorAutorizador: one(professor, {
 		fields: [emprestimo.professorAutorizadorId],
 		references: [professor.id],
 		relationName: 'professorAutorizador'
+	}),
+	adminAprovador: one(usuario, {
+		fields: [emprestimo.adminAprovadorId],
+		references: [usuario.id],
+		relationName: 'adminAprovador'
 	}),
 	processosAdministrativos: many(processoAdministrativo)
 }));

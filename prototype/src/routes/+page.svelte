@@ -41,12 +41,12 @@
 		</div>
 	{:else if stats}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-			<!-- Total Clientes -->
+			<!-- Total Usuários -->
 			<div class="bg-white rounded-lg shadow p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-gray-500 text-sm font-medium">Total Clientes</p>
-						<p class="text-2xl font-bold text-gray-900 mt-2">{stats.totalClientes}</p>
+						<p class="text-gray-500 text-sm font-medium">Total Usuários</p>
+						<p class="text-2xl font-bold text-gray-900 mt-2">{stats.totalUsuarios}</p>
 					</div>
 					<Users class="text-blue-500" size={32} />
 				</div>

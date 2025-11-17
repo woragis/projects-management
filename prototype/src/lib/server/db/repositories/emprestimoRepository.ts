@@ -1,11 +1,13 @@
 import { db } from '../index';
-import { emprestimo, item, cliente, professor } from '../schemas';
+import { emprestimo, item, usuario, professor } from '../schemas';
 import { eq, and, desc, asc, count, gte, lte, sql } from 'drizzle-orm';
 
 export interface EmprestimoCreateInput {
 	itemId: string;
 	solicitanteId: string;
 	professorAutorizadorId?: string;
+	adminAprovadorId?: string;
+	statusAprovacao?: 'pendente' | 'aprovado' | 'rejeitado';
 	dataInicio: string;
 	dataDevolucaoPrevista: string;
 	pessoaQuePegou?: string;
@@ -19,6 +21,9 @@ export interface EmprestimoUpdateInput {
 	dataDevolucaoPrevista?: string;
 	dataDevolucaoReal?: string;
 	status?: 'ativo' | 'devolvido' | 'atrasado' | 'cancelado';
+	statusAprovacao?: 'pendente' | 'aprovado' | 'rejeitado';
+	professorAutorizadorId?: string;
+	adminAprovadorId?: string;
 	pessoaQuePegou?: string;
 	salaQuePegou?: string;
 	localizacaoAtual?: string;
@@ -30,6 +35,7 @@ export interface EmprestimoFilters {
 	itemId?: string;
 	professorAutorizadorId?: string;
 	status?: 'ativo' | 'devolvido' | 'atrasado' | 'cancelado';
+	statusAprovacao?: 'pendente' | 'aprovado' | 'rejeitado';
 	dataInicioInicio?: string; // data inicial do período
 	dataInicioFim?: string; // data final do período
 	atrasados?: boolean; // apenas emprestimos atrasados
@@ -46,6 +52,7 @@ export class EmprestimoRepository {
 			.values({
 				...data,
 				status: 'ativo',
+				statusAprovacao: data.statusAprovacao || 'pendente',
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString()
 			})
@@ -54,19 +61,28 @@ export class EmprestimoRepository {
 	}
 
 	async findById(id: string) {
+		// Note: Para evitar join duplicado de usuario, fazemos duas queries ou usamos aliases
+		// Por simplicidade, vamos buscar adminAprovador separadamente se necessário
 		const [result] = await db
 			.select({
 				emprestimo: emprestimo,
 				item: item,
-				solicitante: cliente,
+				solicitante: usuario,
 				professorAutorizador: professor
 			})
 			.from(emprestimo)
 			.innerJoin(item, eq(emprestimo.itemId, item.id))
-			.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+			.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
 			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id))
 			.where(eq(emprestimo.id, id))
 			.limit(1);
+		
+		// Buscar admin aprovador se existir
+		if (result?.emprestimo.adminAprovadorId) {
+			const admin = await db.select().from(usuario).where(eq(usuario.id, result.emprestimo.adminAprovadorId)).limit(1);
+			return { ...result, adminAprovador: admin[0] || null };
+		}
+		
 		return result;
 	}
 
@@ -147,12 +163,12 @@ export class EmprestimoRepository {
 			.select({
 				emprestimo: emprestimo,
 				item: item,
-				solicitante: cliente,
+				solicitante: usuario,
 				professorAutorizador: professor
 			})
 			.from(emprestimo)
 			.innerJoin(item, eq(emprestimo.itemId, item.id))
-			.innerJoin(cliente, eq(emprestimo.solicitanteId, cliente.id))
+			.innerJoin(usuario, eq(emprestimo.solicitanteId, usuario.id))
 			.leftJoin(professor, eq(emprestimo.professorAutorizadorId, professor.id));
 
 		if (whereClause) {

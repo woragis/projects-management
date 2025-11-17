@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
-import { cliente } from './cliente';
+import { usuario } from './usuario';
 import { emprestimo } from './emprestimo';
 
 export const notificacao = sqliteTable('notificacao', {
@@ -12,7 +12,7 @@ export const notificacao = sqliteTable('notificacao', {
 		.references(() => emprestimo.id, { onDelete: 'cascade' }),
 	destinatarioId: text('destinatario_id')
 		.notNull()
-		.references(() => cliente.id, { onDelete: 'cascade' }),
+		.references(() => usuario.id, { onDelete: 'cascade' }),
 	tipo: text('tipo').notNull(), // email, whatsapp
 	assunto: text('assunto').notNull(),
 	mensagem: text('mensagem').notNull(),
@@ -34,8 +34,8 @@ export const notificacaoRelations = relations(notificacao, ({ one }) => ({
 		fields: [notificacao.emprestimoId],
 		references: [emprestimo.id]
 	}),
-	destinatario: one(cliente, {
+	destinatario: one(usuario, {
 		fields: [notificacao.destinatarioId],
-		references: [cliente.id]
+		references: [usuario.id]
 	})
 }));

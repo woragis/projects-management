@@ -1,5 +1,5 @@
 import { db } from '../index';
-import { notificacao, emprestimo, cliente } from '../schemas';
+import { notificacao, emprestimo, usuario } from '../schemas';
 import { eq, and, desc, asc, count, gte, lte } from 'drizzle-orm';
 
 export interface NotificacaoCreateInput {
@@ -52,11 +52,11 @@ export class NotificacaoRepository {
 			.select({
 				notificacao: notificacao,
 				emprestimo: emprestimo,
-				destinatario: cliente
+				destinatario: usuario
 			})
 			.from(notificacao)
 			.innerJoin(emprestimo, eq(notificacao.emprestimoId, emprestimo.id))
-			.innerJoin(cliente, eq(notificacao.destinatarioId, cliente.id))
+			.innerJoin(usuario, eq(notificacao.destinatarioId, usuario.id))
 			.where(eq(notificacao.id, id))
 			.limit(1);
 		return result;
@@ -99,11 +99,11 @@ export class NotificacaoRepository {
 			.select({
 				notificacao: notificacao,
 				emprestimo: emprestimo,
-				destinatario: cliente
+				destinatario: usuario
 			})
 			.from(notificacao)
 			.innerJoin(emprestimo, eq(notificacao.emprestimoId, emprestimo.id))
-			.innerJoin(cliente, eq(notificacao.destinatarioId, cliente.id));
+			.innerJoin(usuario, eq(notificacao.destinatarioId, usuario.id));
 
 		if (whereClause) {
 			query = query.where(whereClause);
@@ -142,11 +142,11 @@ export class NotificacaoRepository {
 			.select({
 				notificacao: notificacao,
 				emprestimo: emprestimo,
-				destinatario: cliente
+				destinatario: usuario
 			})
 			.from(notificacao)
 			.innerJoin(emprestimo, eq(notificacao.emprestimoId, emprestimo.id))
-			.innerJoin(cliente, eq(notificacao.destinatarioId, cliente.id))
+			.innerJoin(usuario, eq(notificacao.destinatarioId, usuario.id))
 			.where(eq(notificacao.status, 'pendente'))
 			.orderBy(asc(notificacao.dataAgendamento));
 	}
@@ -157,11 +157,11 @@ export class NotificacaoRepository {
 			.select({
 				notificacao: notificacao,
 				emprestimo: emprestimo,
-				destinatario: cliente
+				destinatario: usuario
 			})
 			.from(notificacao)
 			.innerJoin(emprestimo, eq(notificacao.emprestimoId, emprestimo.id))
-			.innerJoin(cliente, eq(notificacao.destinatarioId, cliente.id))
+			.innerJoin(usuario, eq(notificacao.destinatarioId, usuario.id))
 			.where(
 				and(
 					eq(notificacao.status, 'pendente'),

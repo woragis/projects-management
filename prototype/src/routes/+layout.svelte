@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import '../app.css';
 	import { page } from '$app/stores';
+	import { authStore, type User } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
 	import { 
 		Home, 
 		Users, 
@@ -10,11 +13,74 @@
 		Bell, 
 		FileText,
 		Menu,
-		X
+		X,
+		LogOut,
+		User as UserIcon
 	} from 'lucide-svelte';
 	
 	let { children } = $props();
 	let menuOpen = $state(false);
+	let user = $state<User | null>(null);
+	let loading = $state(true);
+
+	onMount(async () => {
+		// Se estiver na página de login, não verificar autenticação
+		try {
+			const currentPath = $page?.url?.pathname || '';
+			if (currentPath === '/login') {
+				loading = false;
+				return;
+			}
+		} catch (e) {
+			// Se $page não estiver disponível, continuar normalmente
+			console.warn('Page store not available:', e);
+		}
+
+		// Verificar autenticação ao carregar
+		try {
+			const currentUser = await authStore.checkAuth();
+			user = currentUser;
+			if (!currentUser) {
+				goto('/login');
+				return;
+			}
+		} catch (err) {
+			console.error('Auth check error:', err);
+			goto('/login');
+			return;
+		} finally {
+			loading = false;
+		}
+
+		// Inscrever no store para atualizações
+		const unsubscribe = authStore.subscribe((u) => {
+			user = u;
+		});
+
+		return () => {
+			unsubscribe();
+		};
+	});
+
+	async function handleLogout() {
+		await authStore.logout();
+	}
+
+	function getUserDisplayName() {
+		if (!user) return '';
+		return user.nomeCompleto || user.cpf || 'Usuário';
+	}
+
+	function getUserRoleName() {
+		if (!user) return '';
+		const roles: Record<string, string> = {
+			'super_admin': 'Super Admin',
+			'admin': 'Admin',
+			'professor': 'Professor',
+			'aluno': 'Aluno'
+		};
+		return roles[user.role] || user.role;
+	}
 </script>
 
 <div class="min-h-screen bg-gray-50">
@@ -29,6 +95,21 @@
 				<X size={24} />
 			</button>
 		</div>
+
+		<!-- User Info -->
+		{#if user}
+			<div class="px-6 py-4 border-b border-gray-800">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+						<UserIcon size={20} />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-white truncate">{getUserDisplayName()}</p>
+						<p class="text-xs text-gray-400">{getUserRoleName()}</p>
+					</div>
+				</div>
+			</div>
+		{/if}
 		
 		<nav class="mt-6">
 			<a 
@@ -40,11 +121,11 @@
 			</a>
 			
 			<a 
-				href="/clientes" 
-				class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white {($page.url?.pathname || '').startsWith('/clientes') ? 'bg-gray-800 text-white border-l-4 border-blue-500' : ''}"
+				href="/usuarios" 
+				class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white {($page.url?.pathname || '').startsWith('/usuarios') ? 'bg-gray-800 text-white border-l-4 border-blue-500' : ''}"
 			>
 				<Users size={20} class="mr-3" />
-				Clientes
+				Usuários
 			</a>
 			
 			<a 
@@ -87,6 +168,19 @@
 				Processos Administrativos
 			</a>
 		</nav>
+
+		<!-- Logout Button -->
+		{#if user}
+			<div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
+				<button
+					onclick={handleLogout}
+					class="w-full flex items-center gap-3 px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition"
+				>
+					<LogOut size={20} />
+					<span>Sair</span>
+				</button>
+			</div>
+		{/if}
 	</aside>
 
 	<!-- Mobile menu button -->
@@ -116,9 +210,19 @@
 	{/if}
 
 	<!-- Main content -->
-	<main class="lg:ml-64 min-h-screen p-6">
-		<div class="max-w-7xl mx-auto">
+	{#if loading}
+		<main class="lg:ml-64 min-h-screen p-6 flex items-center justify-center">
+			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+		</main>
+	{:else if (($page?.url?.pathname || '') === '/login')}
+		<main class="min-h-screen">
 			{@render children()}
-		</div>
-	</main>
+		</main>
+	{:else if user}
+		<main class="lg:ml-64 min-h-screen p-6">
+			<div class="max-w-7xl mx-auto">
+				{@render children()}
+			</div>
+		</main>
+	{/if}
 </div>

@@ -5,34 +5,22 @@
 	import { uploadFile, validateImageFile } from '$lib/utils/upload';
 
 	let formData = $state({
-		nome: '',
-		descricao: '',
-		categoria: '',
-		codigoPatrimonio: '',
-		disponivel: true,
-		condicao: 'bom',
-		foto: '',
-		localizacao: '',
-		tags: [] as string[]
+		cpf: '',
+		rg: '',
+		dataNascimento: '',
+		nomeCompleto: '',
+		fotoPerfil: '',
+		email: '',
+		telefone: '',
+		whatsapp: '',
+		endereco: ''
 	});
 
-	let tagInput = $state('');
 	let loading = $state(false);
 	let uploadingImage = $state(false);
 	let error = $state<string | null>(null);
 	let imagePreview = $state<string | null>(null);
 	let selectedFile = $state<File | null>(null);
-
-	function addTag() {
-		if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-			formData.tags = [...formData.tags, tagInput.trim()];
-			tagInput = '';
-		}
-	}
-
-	function removeTag(tag: string) {
-		formData.tags = formData.tags.filter(t => t !== tag);
-	}
 
 	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -64,11 +52,11 @@
 		error = null;
 
 		try {
-			const result = await uploadFile(selectedFile, 'item');
+			const result = await uploadFile(selectedFile, 'cliente');
 			if (result.success && result.url) {
-				formData.foto = result.url;
+				formData.fotoPerfil = result.url;
 				selectedFile = null;
-				imagePreview = null; // Limpar preview local, usar a URL do servidor
+				imagePreview = null;
 			} else {
 				error = result.error || 'Erro ao fazer upload da imagem';
 			}
@@ -82,12 +70,11 @@
 	function removeImage() {
 		selectedFile = null;
 		imagePreview = null;
-		formData.foto = '';
+		formData.fotoPerfil = '';
 	}
 
 	async function handleSubmit() {
-		// Se houver arquivo selecionado mas ainda não foi feito upload, fazer upload primeiro
-		if (selectedFile && !formData.foto) {
+		if (selectedFile && !formData.fotoPerfil) {
 			await handleUpload();
 			if (error) return;
 		}
@@ -96,10 +83,10 @@
 		error = null;
 
 		try {
-			await api.post('/itens', formData);
-			goto('/itens');
+			await api.post('/clientes', formData);
+			goto('/usuarios');
 		} catch (err: any) {
-			error = err.response?.data?.error || 'Erro ao criar item';
+			error = err.response?.data?.error || 'Erro ao criar usuário';
 		} finally {
 			loading = false;
 		}
@@ -108,10 +95,10 @@
 
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
-		<a href="/itens" class="text-gray-600 hover:text-gray-900">
+		<a href="/usuarios" class="text-gray-600 hover:text-gray-900">
 			<ArrowLeft size={24} />
 		</a>
-		<h1 class="text-3xl font-bold text-gray-900">Novo Item</h1>
+		<h1 class="text-3xl font-bold text-gray-900">Novo Usuário</h1>
 	</div>
 
 	{#if error}
@@ -122,82 +109,91 @@
 
 	<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="bg-white rounded-lg shadow p-6 space-y-6">
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<div class="md:col-span-2">
-				<label for="nome" class="block text-sm font-medium text-gray-700 mb-2">Nome *</label>
+			<div>
+				<label for="nomeCompleto" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
 				<input 
-					id="nome"
+					id="nomeCompleto"
 					type="text" 
 					required
 					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					bind:value={formData.nome}
+					bind:value={formData.nomeCompleto}
+				/>
+			</div>
+
+			<div>
+				<label for="cpf" class="block text-sm font-medium text-gray-700 mb-2">CPF *</label>
+				<input 
+					id="cpf"
+					type="text" 
+					required
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					bind:value={formData.cpf}
+				/>
+			</div>
+
+			<div>
+				<label for="rg" class="block text-sm font-medium text-gray-700 mb-2">RG *</label>
+				<input 
+					id="rg"
+					type="text" 
+					required
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					bind:value={formData.rg}
+				/>
+			</div>
+
+			<div>
+				<label for="dataNascimento" class="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento *</label>
+				<input 
+					id="dataNascimento"
+					type="date" 
+					required
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					bind:value={formData.dataNascimento}
+				/>
+			</div>
+
+			<div>
+				<label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+				<input 
+					id="email"
+					type="email" 
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					bind:value={formData.email}
+				/>
+			</div>
+
+			<div>
+				<label for="telefone" class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+				<input 
+					id="telefone"
+					type="tel" 
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					bind:value={formData.telefone}
+				/>
+			</div>
+
+			<div>
+				<label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
+				<input 
+					id="whatsapp"
+					type="tel" 
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					bind:value={formData.whatsapp}
 				/>
 			</div>
 
 			<div class="md:col-span-2">
-				<label for="descricao" class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-				<textarea 
-					id="descricao"
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					rows="3"
-					bind:value={formData.descricao}
-				></textarea>
-			</div>
-
-			<div>
-				<label for="categoria" class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-				<input 
-					id="categoria"
-					type="text" 
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					bind:value={formData.categoria}
-				/>
-			</div>
-
-			<div>
-				<label for="codigoPatrimonio" class="block text-sm font-medium text-gray-700 mb-2">Código Patrimônio</label>
-				<input 
-					id="codigoPatrimonio"
-					type="text" 
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					bind:value={formData.codigoPatrimonio}
-				/>
-			</div>
-
-			<div>
-				<label for="condicao" class="block text-sm font-medium text-gray-700 mb-2">Condição</label>
-				<select 
-					id="condicao"
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					bind:value={formData.condicao}
-				>
-					<option value="bom">Bom</option>
-					<option value="regular">Regular</option>
-					<option value="ruim">Ruim</option>
-				</select>
-			</div>
-
-			<div>
-				<label for="localizacao" class="block text-sm font-medium text-gray-700 mb-2">Localização</label>
-				<input 
-					id="localizacao"
-					type="text" 
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					bind:value={formData.localizacao}
-				/>
-			</div>
-
-			<div class="md:col-span-2">
-				<label for="fotoFile" class="block text-sm font-medium text-gray-700 mb-2">Foto</label>
+				<label for="fotoPerfilFile" class="block text-sm font-medium text-gray-700 mb-2">Foto de Perfil</label>
 				
-				<!-- Preview da imagem -->
-				{#if imagePreview || formData.foto}
+				{#if imagePreview || formData.fotoPerfil}
 					<div class="mb-4 relative inline-block">
 						<img 
-							src={imagePreview || formData.foto} 
+							src={imagePreview || formData.fotoPerfil} 
 							alt="Preview" 
 							class="w-32 h-32 object-cover rounded-lg border border-gray-300"
 						/>
-						{#if selectedFile || !formData.foto}
+						{#if selectedFile || !formData.fotoPerfil}
 							<button
 								type="button"
 								onclick={removeImage}
@@ -209,11 +205,10 @@
 					</div>
 				{/if}
 
-				<!-- Input de arquivo -->
 				<div class="flex gap-4 items-end">
 					<div class="flex-1">
 						<input 
-							id="fotoFile"
+							id="fotoPerfilFile"
 							type="file" 
 							accept="image/*"
 							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -234,65 +229,32 @@
 					{/if}
 				</div>
 
-				<!-- URL alternativa (opcional) -->
 				<div class="mt-4">
-					<label for="fotoUrl" class="block text-sm font-medium text-gray-700 mb-2">Ou informe uma URL</label>
+					<label for="fotoPerfilUrl" class="block text-sm font-medium text-gray-700 mb-2">Ou informe uma URL</label>
 					<input 
-						id="fotoUrl"
+						id="fotoPerfilUrl"
 						type="url" 
 						placeholder="https://exemplo.com/imagem.jpg"
 						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-						bind:value={formData.foto}
+						bind:value={formData.fotoPerfil}
 					/>
 				</div>
 			</div>
+		</div>
 
-			<div class="md:col-span-2">
-				<label for="tagInput" class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-				<div class="flex gap-2 mb-2">
-					<input 
-						id="tagInput"
-						type="text" 
-						placeholder="Adicionar tag..."
-						class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-						bind:value={tagInput}
-						onkeypress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-					/>
-					<button 
-						type="button"
-						onclick={addTag}
-						class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-					>
-						Adicionar
-					</button>
-				</div>
-				<div class="flex flex-wrap gap-2">
-					{#each formData.tags as tag}
-						<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2">
-							{tag}
-							<button type="button" onclick={() => removeTag(tag)} class="text-blue-600 hover:text-blue-800">
-								×
-							</button>
-						</span>
-					{/each}
-				</div>
-			</div>
-
-			<div>
-				<label class="flex items-center gap-2">
-					<input 
-						type="checkbox" 
-						class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-						bind:checked={formData.disponivel}
-					/>
-					<span class="text-sm font-medium text-gray-700">Disponível</span>
-				</label>
-			</div>
+		<div>
+			<label for="endereco" class="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+			<textarea 
+				id="endereco"
+				class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+				rows="3"
+				bind:value={formData.endereco}
+			></textarea>
 		</div>
 
 		<div class="flex justify-end gap-4">
 			<a 
-				href="/itens" 
+				href="/usuarios" 
 				class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
 			>
 				Cancelar

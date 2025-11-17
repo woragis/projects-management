@@ -1,5 +1,5 @@
 // Export all repositories
-export * from './clienteRepository';
+export * from './usuarioRepository';
 export * from './professorRepository';
 export * from './itemRepository';
 export * from './emprestimoRepository';

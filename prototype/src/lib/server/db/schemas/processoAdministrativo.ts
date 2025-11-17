@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 import { emprestimo } from './emprestimo';
-import { cliente } from './cliente';
+import { usuario } from './usuario';
 
 export const processoAdministrativo = sqliteTable('processo_administrativo', {
 	id: text('id')
@@ -9,9 +9,9 @@ export const processoAdministrativo = sqliteTable('processo_administrativo', {
 		.$defaultFn(() => crypto.randomUUID()),
 	emprestimoId: text('emprestimo_id')
 		.references(() => emprestimo.id, { onDelete: 'set null' }),
-	clienteId: text('cliente_id')
+	usuarioId: text('usuario_id')
 		.notNull()
-		.references(() => cliente.id, { onDelete: 'cascade' }),
+		.references(() => usuario.id, { onDelete: 'cascade' }),
 	tipo: text('tipo').notNull(), // perda, quebra, mas_condicoes, roubo
 	descricao: text('descricao').notNull(),
 	status: text('status')
@@ -36,8 +36,8 @@ export const processoAdministrativoRelations = relations(processoAdministrativo,
 		fields: [processoAdministrativo.emprestimoId],
 		references: [emprestimo.id]
 	}),
-	cliente: one(cliente, {
-		fields: [processoAdministrativo.clienteId],
-		references: [cliente.id]
+	usuario: one(usuario, {
+		fields: [processoAdministrativo.usuarioId],
+		references: [usuario.id]
 	})
 }));

@@ -1,9 +1,9 @@
 import { db } from '../index';
-import { professor, cliente } from '../schemas';
+import { professor, usuario } from '../schemas';
 import { eq, and, like, desc, asc, count } from 'drizzle-orm';
 
 export interface ProfessorCreateInput {
-	clienteId: string;
+	usuarioId: string;
 	matricula: string;
 	departamento?: string;
 	cargo?: string;
@@ -47,10 +47,10 @@ export class ProfessorRepository {
 		const [result] = await db
 			.select({
 				professor: professor,
-				cliente: cliente
+				usuario: usuario
 			})
 			.from(professor)
-			.innerJoin(cliente, eq(professor.clienteId, cliente.id))
+			.innerJoin(usuario, eq(professor.usuarioId, usuario.id))
 			.where(eq(professor.id, id))
 			.limit(1);
 		return result;
@@ -65,11 +65,11 @@ export class ProfessorRepository {
 		return result;
 	}
 
-	async findByClienteId(clienteId: string) {
+	async findByUsuarioId(usuarioId: string) {
 		const [result] = await db
 			.select()
 			.from(professor)
-			.where(eq(professor.clienteId, clienteId))
+			.where(eq(professor.usuarioId, usuarioId))
 			.limit(1);
 		return result;
 	}
@@ -98,21 +98,21 @@ export class ProfessorRepository {
 		let query = db
 			.select({
 				professor: professor,
-				cliente: cliente
+				usuario: usuario
 			})
 			.from(professor)
-			.innerJoin(cliente, eq(professor.clienteId, cliente.id));
+			.innerJoin(usuario, eq(professor.usuarioId, usuario.id));
 
 		if (whereClause) {
 			query = query.where(whereClause);
 		}
 
-		// Filter by cliente nome if provided
+		// Filter by usuario nome if provided
 		if (filters?.nome) {
 			query = query.where(
 				and(
 					whereClause || undefined,
-					like(cliente.nomeCompleto, `%${filters.nome}%`)
+					like(usuario.nomeCompleto, `%${filters.nome}%`)
 				)
 			);
 		}
@@ -121,7 +121,7 @@ export class ProfessorRepository {
 		if (filters?.sortBy) {
 			const sortColumn =
 				filters.sortBy === 'nomeCompleto'
-					? cliente.nomeCompleto
+					? usuario.nomeCompleto
 					: filters.sortBy === 'matricula'
 						? professor.matricula
 						: professor.createdAt;
@@ -172,11 +172,11 @@ export class ProfessorRepository {
 			countQuery = db
 				.select({ count: count() })
 				.from(professor)
-				.innerJoin(cliente, eq(professor.clienteId, cliente.id))
+				.innerJoin(usuario, eq(professor.usuarioId, usuario.id))
 				.where(
 					and(
 						whereClause || undefined,
-						like(cliente.nomeCompleto, `%${filters.nome}%`)
+						like(usuario.nomeCompleto, `%${filters.nome}%`)
 					)
 				);
 		} else if (whereClause) {

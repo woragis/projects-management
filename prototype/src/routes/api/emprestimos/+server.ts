@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { emprestimoRepository, itemRepository } from '$lib/server/db/repositories';
+import { emprestimoRepository, itemRepository, usuarioRepository } from '$lib/server/db/repositories';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, cookies }) => {
 	try {
 		const solicitanteId = url.searchParams.get('solicitanteId');
 		const itemId = url.searchParams.get('itemId');
@@ -46,20 +46,46 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const body = await request.json();
+		const sessionId = cookies.get('session');
 		
+		if (!sessionId) {
+			return json({ error: 'Não autenticado' }, { status: 401 });
+		}
+
+		// Buscar usuário solicitante
+		const solicitante = await usuarioRepository.findById(body.solicitanteId);
+		if (!solicitante) {
+			return json({ error: 'Solicitante não encontrado' }, { status: 404 });
+		}
+
 		// Validar limite de 3 itens
 		const countAtivos = await emprestimoRepository.countAtivosPorSolicitante(body.solicitanteId);
 		if (countAtivos >= 3) {
 			return json({ error: 'Limite de 3 itens emprestados atingido' }, { status: 400 });
 		}
 
-		const emprestimo = await emprestimoRepository.create(body);
+		// Verificar role do solicitante
+		const isProfessor = solicitante.role === 'professor' || solicitante.role === 'admin' || solicitante.role === 'super_admin';
+		const isAluno = solicitante.role === 'aluno';
+
+		// Se for professor/admin, aprovação automática
+		// Se for aluno, precisa aprovação
+		const statusAprovacao = isProfessor ? 'aprovado' : 'pendente';
+		const adminAprovadorId = isProfessor ? sessionId : undefined;
+
+		const emprestimo = await emprestimoRepository.create({
+			...body,
+			statusAprovacao,
+			adminAprovadorId: adminAprovadorId
+		});
 		
-		// Marcar item como indisponível
-		await itemRepository.marcarComoIndisponivel(body.itemId);
+		// Se aprovado, marcar item como indisponível imediatamente
+		if (statusAprovacao === 'aprovado') {
+			await itemRepository.marcarComoIndisponivel(body.itemId);
+		}
 
 		return json({ data: emprestimo }, { status: 201 });
 	} catch (error: any) {
