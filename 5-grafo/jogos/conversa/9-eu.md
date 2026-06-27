@@ -1,0 +1,1 @@
+daria para colocar codigo morse? e tecnicas de ler em algo criptografado? tipo ler em jornal ou algo assim. tecnicas de guerra.

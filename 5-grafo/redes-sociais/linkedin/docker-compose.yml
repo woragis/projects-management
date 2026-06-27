@@ -1,0 +1,12 @@
+# Backend: Postgres + Redis + API + Workers
+#
+#   cp backend/.env.example backend/.env
+#   docker compose up -d --build
+#
+# API: http://127.0.0.1:8080
+# Frontend (local): cd frontend && npm run dev  →  http://127.0.0.1:3000
+
+name: linkedin
+
+include:
+  - path: ./backend/docker-compose.yml

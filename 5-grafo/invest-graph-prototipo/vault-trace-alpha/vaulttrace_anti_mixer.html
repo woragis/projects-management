@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultTrace — Anti-Mixer · Rastreamento em Grafos</title>
+  <link rel="stylesheet" href="vaulttrace.css">
+</head>
+<body>
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 16 16">
+            <circle cx="4" cy="8" r="2"/>
+            <circle cx="12" cy="4" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <line x1="6" y1="7.5" x2="10" y2="4.5"/>
+            <line x1="6" y1="8.5" x2="10" y2="11.5"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">VaultTrace</span>
+          <span class="brand-sub">Anti-Mixer · Teoria dos Grafos</span>
+        </div>
+      </div>
+      <span class="lab-badge">Compliance Lab</span>
+      <span class="text-sm" style="font-size:12px;color:var(--text-muted)">
+        <span id="net-name">—</span>
+        <span id="radial-badge" class="radial-badge" style="display:none">radial</span>
+      </span>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val lab" id="m-visited">0</div>
+          <div class="metric-lbl">nós visitados</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m-ms">0ms</div>
+          <div class="metric-lbl">tempo</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val btc" id="m-mixed">0</div>
+          <div class="metric-lbl">tx mixed</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val btc" id="m-recoverable">—</div>
+          <div class="metric-lbl">taint rastreável</div>
+        </div>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h2>Cenário</h2>
+        <p class="intro">
+          Simulação acadêmica: um <strong>mixer</strong> embaralha fluxos BTC e o
+          <strong>compliance tracer</strong> usa algoritmos de grafos para rastrear.
+          Tudo roda offline — basta abrir este arquivo no navegador.
+        </p>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="btn-generate">Gerar demo</button>
+          <button type="button" class="btn btn-primary" id="btn-mix-simple">Mix simples</button>
+          <button type="button" class="btn btn-lab" id="btn-mix-layered">Mix camadas</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h2>Algoritmos</h2>
+        <div class="algo-grid">
+          <button type="button" class="btn btn-ghost algo-btn active" data-algo="bfs">BFS</button>
+          <button type="button" class="btn btn-ghost algo-btn" data-algo="dfs">DFS</button>
+          <button type="button" class="btn btn-ghost algo-btn" data-algo="astar">A*</button>
+          <button type="button" class="btn btn-ghost algo-btn" data-algo="dijkstra">Dijkstra</button>
+          <button type="button" class="btn btn-ghost algo-btn" data-algo="bfs-temporal">BFS-T</button>
+          <button type="button" class="btn btn-ghost algo-btn" data-algo="dfs-temporal">DFS-T</button>
+          <button type="button" class="btn btn-ghost algo-btn" data-algo="taint">Taint</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;min-height:0;border-bottom:none">
+        <h2>Carteiras chave</h2>
+        <div class="wallet-list" id="wallet-list">
+          <div class="wallet-meta" style="padding:4px 0">Gere a demo para ver as carteiras.</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="graph-area" id="graph-area">
+      <canvas id="gc"></canvas>
+      <div class="graph-overlay">
+        <span style="font-size:10px;color:var(--text-muted)">Exibir:</span>
+        <button type="button" class="chip on" data-layer="nodes">Nós</button>
+        <button type="button" class="chip on" data-layer="edges">Arestas</button>
+        <button type="button" class="chip on" data-layer="mixed">Mixed</button>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#D97706"></div>origem</div>
+        <div class="leg"><div class="leg-dot" style="background:#DC2626"></div>destino</div>
+        <div class="leg"><div class="leg-dot" style="background:#059669"></div>exchange</div>
+        <div class="leg"><div class="leg-dot" style="background:#EA580C"></div>intermediária</div>
+        <div class="leg"><div class="leg-dot" style="background:#7C3AED"></div>caminho trace</div>
+      </div>
+      <div class="tooltip" id="tooltip">
+        <div class="tooltip-title" id="tt-title"></div>
+        <div id="tt-body"></div>
+      </div>
+    </main>
+
+    <aside class="trace-panel">
+      <div class="trace-head">
+        <h2>Rastreamento</h2>
+        <div class="trace-status" id="trace-status">Aguardando demo…</div>
+      </div>
+      <div class="log-feed" id="log-feed"></div>
+      <div class="path-section">
+        <h3>Caminhos</h3>
+        <div id="path-list"></div>
+      </div>
+      <div class="algo-help" id="algo-help-text"></div>
+    </aside>
+
+    <footer class="statusbar">
+      <div class="status-dot"></div>
+      <span id="status-msg">VaultTrace — protótipo offline para compartilhar</span>
+      <span style="flex:1"></span>
+      <span id="st-nodes">0</span> nós ·
+      <span id="st-edges">0</span> arestas ·
+      <span id="st-mixed">0</span> mixed
+    </footer>
+
+  </div>
+  <script src="vaulttrace-app.js"></script>
+</body>
+</html>

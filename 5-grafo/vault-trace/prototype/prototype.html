@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anti-Mixer — Rastreamento de Transações Cripto</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:  #ffffff; --bg2: #f5f4f0; --bg3: #eceae3;
+  --t:   #1a1a18; --t2:  #6b6a63; --t3:  #9c9a92;
+  --bd:  rgba(0,0,0,0.11); --bd2: rgba(0,0,0,0.22);
+  --font: -apple-system,'Segoe UI',sans-serif;
+
+  --amber:  #BA7517; --amber-l: #FAEEDA; --amber-d: #633806;
+  --red:    #E24B4A; --red-l:   #FCEBEB; --red-d:   #791F1F;
+  --teal:   #1D9E75; --teal-l:  #E1F5EE; --teal-d:  #085041;
+  --purple: #7F77DD; --purple-l:#EEEDFE; --purple-d:#3C3489;
+  --gray:   #888780; --gray-l:  #F1EFE8; --gray-d:  #444441;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#1e1e1c; --bg2:#272724; --bg3:#303030;
+    --t:#e8e6dc; --t2:#9c9a92; --t3:#6b6a63;
+    --bd:rgba(255,255,255,0.09); --bd2:rgba(255,255,255,0.18);
+    --amber-l:#412402; --red-l:#501313; --teal-l:#04342C; --purple-l:#26215C; --gray-l:#2C2C2A;
+  }
+}
+
+body { font-family: var(--font); background: var(--bg); color: var(--t); }
+
+.app { display: flex; flex-direction: column; height: 100vh; min-height: 560px; }
+
+.topbar {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px; height: 52px;
+  border-bottom: 0.5px solid var(--bd); background: var(--bg);
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-icon { width: 26px; height: 26px; border-radius: 7px; background: var(--amber-l); border: 0.5px solid var(--amber); display: flex; align-items: center; justify-content: center; }
+.brand-icon svg { width: 14px; height: 14px; }
+.brand-name { font-size: 13px; font-weight: 500; }
+.brand-sub  { font-size: 11px; color: var(--t2); margin-left: 3px; }
+
+.stats { display: flex; gap: 20px; }
+.stat { text-align: right; }
+.stat-v { font-size: 16px; font-weight: 500; }
+.stat-v.amber  { color: var(--amber); }
+.stat-v.red    { color: var(--red); }
+.stat-v.teal   { color: var(--teal); }
+.stat-l { font-size: 10px; color: var(--t2); }
+
+.main { flex: 1; display: flex; overflow: hidden; }
+
+.canvas-wrap { flex: 1; position: relative; overflow: hidden; background: var(--bg2); }
+canvas { position: absolute; inset: 0; }
+
+.sidebar {
+  width: 260px; flex-shrink: 0;
+  background: var(--bg); border-left: 0.5px solid var(--bd);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sb-sect { padding: 12px 14px; border-bottom: 0.5px solid var(--bd); }
+.sb-title { font-size: 10px; font-weight: 500; color: var(--t2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+
+.path-list { flex: 1; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+.path-card {
+  padding: 8px 10px; border-radius: 8px;
+  border: 0.5px solid var(--bd); font-size: 11px;
+  cursor: pointer; transition: background 0.12s;
+}
+.path-card:hover { background: var(--bg2); }
+.path-card.active { border-color: var(--amber); background: var(--amber-l); }
+.path-card.done   { border-color: var(--red);   background: var(--red-l); }
+.pc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.pc-name { font-weight: 500; font-size: 12px; }
+.pc-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+.badge-running { background: var(--amber-l); color: var(--amber-d); border: 0.5px solid var(--amber); }
+.badge-found   { background: var(--red-l);   color: var(--red-d);   border: 0.5px solid var(--red); }
+.badge-pending { background: var(--gray-l);  color: var(--gray-d); }
+.pc-meta { color: var(--t2); line-height: 1.6; }
+.pc-path { font-size: 10px; color: var(--t2); margin-top: 4px; padding-top: 4px; border-top: 0.5px solid var(--bd); word-break: break-all; font-family: monospace; }
+
+.log-feed { max-height: 160px; overflow-y: auto; padding: 6px 12px; display: flex; flex-direction: column; gap: 3px; }
+.log-row { font-size: 10px; padding: 3px 6px; border-radius: 4px; border-left: 2px solid; }
+.log-row.info  { background: var(--teal-l);   border-color: var(--teal);   color: var(--teal-d); }
+.log-row.warn  { background: var(--amber-l);  border-color: var(--amber);  color: var(--amber-d); }
+.log-row.found { background: var(--red-l);    border-color: var(--red);    color: var(--red-d); }
+
+.controls {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 48px;
+  border-top: 0.5px solid var(--bd); background: var(--bg);
+}
+.btn {
+  font-size: 12px; padding: 5px 14px; border-radius: 7px;
+  border: 0.5px solid var(--bd2); background: transparent;
+  color: var(--t); cursor: pointer; font-family: var(--font);
+  transition: background 0.12s;
+}
+.btn:hover { background: var(--bg2); }
+.btn.primary { background: var(--amber-l); border-color: var(--amber); color: var(--amber-d); }
+.btn.danger  { background: var(--red-l);   border-color: var(--red);   color: var(--red-d); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.sep { width: 1px; height: 20px; background: var(--bd); }
+.sp  { flex: 1; }
+.legend { display: flex; gap: 12px; font-size: 11px; color: var(--t2); align-items: center; }
+.leg { display: flex; align-items: center; gap: 5px; }
+.led { width: 8px; height: 8px; border-radius: 50%; }
+
+.tooltip {
+  position: absolute; background: var(--bg);
+  border: 0.5px solid var(--bd2); border-radius: 8px;
+  padding: 7px 10px; font-size: 11px;
+  pointer-events: none; display: none; z-index: 30; min-width: 160px;
+}
+.tt-title { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+.tt-row   { color: var(--t2); line-height: 1.65; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 14 14" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="7" cy="7" r="5.5"/>
+          <path d="M5 7h4M7 5v4"/>
+        </svg>
+      </div>
+      <span class="brand-name">Anti-Mixer</span>
+      <span class="brand-sub">rastreamento de fluxo cripto · BFS/DFS</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-v amber" id="sv-wallets">0</div><div class="stat-l">carteiras</div></div>
+      <div class="stat"><div class="stat-v"       id="sv-txns">0</div><div class="stat-l">transações</div></div>
+      <div class="stat"><div class="stat-v red"   id="sv-paths">0</div><div class="stat-l">caminhos suspeitos</div></div>
+      <div class="stat"><div class="stat-v teal"  id="sv-found">0</div><div class="stat-l">destinos rastreados</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="canvas-wrap" id="cwrap">
+      <canvas id="gc"></canvas>
+      <div class="tooltip" id="tt">
+        <div class="tt-title" id="tt-title"></div>
+        <div id="tt-body"></div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sb-sect">
+        <div class="sb-title">Caminhos rastreados</div>
+        <div id="path-list" class="path-list" style="max-height:220px;padding:0;margin-top:0">
+          <div style="font-size:11px;color:var(--t2)">Aguardando rastreamento...</div>
+        </div>
+      </div>
+      <div class="sb-sect" style="padding-bottom:6px">
+        <div class="sb-title">Log do algoritmo</div>
+      </div>
+      <div class="log-feed" id="log-feed">
+        <div class="log-row info">Sistema iniciado — grafo carregado.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="btn-trace" onclick="startTrace()">Rastrear</button>
+    <button class="btn"         id="btn-step"  onclick="stepTrace()" disabled>Passo a passo</button>
+    <button class="btn danger"  id="btn-reset" onclick="resetAll()">Reiniciar</button>
+    <div class="sep"></div>
+    <div class="legend">
+      <div class="leg"><div class="led" style="background:#BA7517"></div>origem</div>
+      <div class="leg"><div class="led" style="background:#E24B4A"></div>destino final</div>
+      <div class="leg"><div class="led" style="background:#EF9F27"></div>caminho suspeito</div>
+      <div class="leg"><div class="led" style="background:#888780"></div>inocente</div>
+    </div>
+    <div class="sp"></div>
+    <span style="font-size:11px;color:var(--t2)" id="phase-msg">Clique em "Rastrear" para iniciar o BFS</span>
+  </div>
+
+</div>
+
+<script>
+const canvas = document.getElementById('gc');
+const ctx    = canvas.getContext('2d');
+const cwrap  = document.getElementById('cwrap');
+
+let nodes = [], edges = [], animId = null, pulseT = 0;
+let tracedPaths = [];
+let activeParticles = [];
+let revealedEdges   = new Set();
+let revealedNodes   = new Set();
+let traceRunning    = false;
+let traceQueue      = [];
+let traceInterval   = null;
+let foundCount      = 0;
+
+function rand(a,b){ return Math.random()*(b-a)+a; }
+function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+function buildGraph(){
+  const W = cwrap.getBoundingClientRect().width  || 700;
+  const H = cwrap.getBoundingClientRect().height || 500;
+  nodes = []; edges = [];
+
+  const NODE_COUNT = 68;
+  const SUSPICIOUS_PATHS = 3;
+
+  for(let i=0;i<NODE_COUNT;i++){
+    let x,y;
+    const margin = 48;
+    do {
+      x = rand(margin, W-margin);
+      y = rand(margin, H-margin);
+    } while(nodes.some(n=>Math.hypot(n.x-x,n.y-y)<38));
+    nodes.push({
+      id: 'W'+String(i+1).padStart(3,'0'),
+      x,y,
+      type: 'innocent',
+      btc: rand(0.01,4.5).toFixed(3),
+      txCount: Math.floor(rand(2,40)),
+      state: 'idle',
+    });
+  }
+
+  nodes[0].type = 'origin';
+  nodes[0].state = 'idle';
+
+  const targets = [];
+  for(let p=0;p<SUSPICIOUS_PATHS;p++){
+    const ti = Math.floor(rand(NODE_COUNT*0.7, NODE_COUNT));
+    nodes[ti].type = 'target';
+    targets.push(ti);
+  }
+
+  for(let i=0;i<NODE_COUNT;i++){
+    const numEdges = Math.floor(rand(1,4));
+    for(let k=0;k<numEdges;k++){
+      const j = Math.floor(rand(0,NODE_COUNT));
+      if(j!==i && !edges.find(e=>(e.a===i&&e.b===j)||(e.a===j&&e.b===i))){
+        edges.push({ a:i, b:j, weight:rand(0.05,1.0), state:'idle', suspicious:false });
+      }
+    }
+  }
+
+  tracedPaths = [];
+  targets.forEach((ti,pi)=>{
+    const path = buildPath(0, ti);
+    if(path.length>2){
+      tracedPaths.push({
+        id: pi,
+        label: 'Caminho '+String.fromCharCode(65+pi),
+        nodes: path,
+        state: 'pending',
+        btc: rand(0.8,3.2).toFixed(3),
+        hops: path.length-1,
+      });
+    }
+  });
+
+  updateStats();
+  renderPathList();
+  addLog('info','Grafo gerado — '+NODE_COUNT+' carteiras, '+edges.length+' transações');
+}
+
+function buildPath(start, end){
+  const visited = new Set([start]);
+  const queue   = [[start]];
+  let best      = null;
+  let iters     = 0;
+  while(queue.length && iters++<2000){
+    const path = queue.shift();
+    const cur  = path[path.length-1];
+    if(cur===end){ best=path; break; }
+    const neighbors = edges
+      .filter(e=>e.a===cur||e.b===cur)
+      .map(e=>e.a===cur?e.b:e.a)
+      .filter(n=>!visited.has(n));
+    neighbors.slice(0,3).forEach(n=>{
+      visited.add(n);
+      queue.push([...path,n]);
+    });
+  }
+  if(!best){
+    const mid1 = Math.floor(rand(1,nodes.length*0.4));
+    const mid2 = Math.floor(rand(nodes.length*0.4,nodes.length*0.7));
+    best = [start,mid1,mid2,end];
+  }
+  return best;
+}
+
+function updateStats(){
+  document.getElementById('sv-wallets').textContent = nodes.length;
+  document.getElementById('sv-txns').textContent    = edges.length;
+  document.getElementById('sv-paths').textContent   = tracedPaths.length;
+  document.getElementById('sv-found').textContent   = foundCount;
+}
+
+function addLog(type, msg){
+  const feed = document.getElementById('log-feed');
+  const d = document.createElement('div');
+  d.className='log-row '+type;
+  d.textContent=msg;
+  feed.insertBefore(d,feed.firstChild);
+  while(feed.children.length>12) feed.removeChild(feed.lastChild);
+}
+
+function renderPathList(){
+  const el = document.getElementById('path-list');
+  if(!tracedPaths.length){
+    el.innerHTML='<div style="font-size:11px;color:var(--t2)">Nenhum caminho ainda.</div>';
+    return;
+  }
+  el.innerHTML = tracedPaths.map(p=>`
+    <div class="path-card ${p.state==='running'?'active':p.state==='done'?'done':''}">
+      <div class="pc-head">
+        <span class="pc-name">${p.label}</span>
+        <span class="pc-badge ${p.state==='running'?'badge-running':p.state==='done'?'badge-found':'badge-pending'}">
+          ${p.state==='running'?'rastreando':p.state==='done'?'encontrado':'aguardando'}
+        </span>
+      </div>
+      <div class="pc-meta">${p.hops} saltos · ${p.btc} BTC</div>
+      ${p.state==='done'?`<div class="pc-path">${p.nodes.map(i=>nodes[i].id).join(' → ')}</div>`:''}
+    </div>
+  `).join('');
+}
+
+let tracePathIdx = 0;
+let traceNodeIdx = 0;
+
+function startTrace(){
+  if(traceRunning) return;
+  traceRunning=true;
+  tracePathIdx=0; traceNodeIdx=0;
+  document.getElementById('btn-trace').disabled=true;
+  document.getElementById('btn-step').disabled=false;
+  document.getElementById('phase-msg').textContent='BFS em execução — rastreando caminhos...';
+  addLog('info','BFS iniciado a partir de '+nodes[0].id);
+  nodes[0].state='origin';
+  revealedNodes.add(0);
+  scheduleNextStep(420);
+}
+
+function scheduleNextStep(delay){
+  if(traceInterval) clearTimeout(traceInterval);
+  traceInterval = setTimeout(()=>{ stepTrace(); }, delay);
+}
+
+function stepTrace(){
+  if(tracePathIdx >= tracedPaths.length){
+    finishTrace(); return;
+  }
+  const path = tracedPaths[tracePathIdx];
+
+  if(traceNodeIdx===0){
+    path.state='running';
+    renderPathList();
+    addLog('warn','Rastreando '+path.label+' — '+path.hops+' saltos, '+path.btc+' BTC');
+  }
+
+  if(traceNodeIdx < path.nodes.length){
+    const ni = path.nodes[traceNodeIdx];
+    revealedNodes.add(ni);
+    if(nodes[ni].type==='innocent') nodes[ni].state='suspicious';
+
+    if(traceNodeIdx>0){
+      const prevNi = path.nodes[traceNodeIdx-1];
+      let edge = edges.find(e=>(e.a===prevNi&&e.b===ni)||(e.a===ni&&e.b===prevNi));
+      if(!edge){
+        edge = { a:prevNi, b:ni, weight:0.8, state:'idle', suspicious:false };
+        edges.push(edge);
+      }
+      edge.suspicious=true;
+      edge.state='traced';
+      revealedEdges.add(edges.indexOf(edge));
+
+      spawnParticle(prevNi, ni, path.id);
+      addLog('warn','  '+nodes[prevNi].id+' → '+nodes[ni].id);
+    }
+    traceNodeIdx++;
+
+    if(traceNodeIdx >= path.nodes.length){
+      const lastNi = path.nodes[path.nodes.length-1];
+      nodes[lastNi].state='target';
+      path.state='done';
+      foundCount++;
+      updateStats();
+      renderPathList();
+      addLog('found','DESTINO ENCONTRADO: '+nodes[lastNi].id+' ('+path.btc+' BTC)');
+      document.getElementById('phase-msg').textContent=path.label+' rastreado — destino: '+nodes[lastNi].id;
+      tracePathIdx++;
+      traceNodeIdx=0;
+      scheduleNextStep(700);
+    } else {
+      scheduleNextStep(320);
+    }
+  }
+}
+
+function finishTrace(){
+  traceRunning=false;
+  clearTimeout(traceInterval);
+  document.getElementById('btn-step').disabled=true;
+  document.getElementById('phase-msg').textContent='Rastreamento concluído — '+foundCount+' destinos identificados';
+  addLog('found','Rastreamento finalizado. '+foundCount+' fluxos suspeitos mapeados.');
+}
+
+function resetAll(){
+  clearTimeout(traceInterval);
+  traceRunning=false; tracePathIdx=0; traceNodeIdx=0;
+  foundCount=0; activeParticles=[];
+  revealedEdges.clear(); revealedNodes.clear();
+  document.getElementById('btn-trace').disabled=false;
+  document.getElementById('btn-step').disabled=true;
+  document.getElementById('phase-msg').textContent='Clique em "Rastrear" para iniciar o BFS';
+  buildGraph();
+}
+
+function spawnParticle(fromIdx, toIdx, pathId){
+  const from = nodes[fromIdx], to = nodes[toIdx];
+  const colors = ['#BA7517','#D85A30','#7F77DD'];
+  activeParticles.push({
+    fromIdx, toIdx,
+    x: from.x, y: from.y,
+    tx: to.x,  ty: to.y,
+    progress: 0,
+    speed: rand(0.018,0.032),
+    color: colors[pathId % colors.length],
+    done: false,
+  });
+}
+
+function nodeColor(n){
+  if(n.state==='origin')     return { fill:'#FAEEDA', stroke:'#BA7517', text:'#633806' };
+  if(n.state==='target')     return { fill:'#FCEBEB', stroke:'#E24B4A', text:'#791F1F' };
+  if(n.state==='suspicious') return { fill:'#FAEEDA', stroke:'#EF9F27', text:'#633806' };
+  return { fill:'#F1EFE8', stroke:'#B4B2A9', text:'#5F5E5A' };
+}
+function nodeRadius(n){
+  if(n.state==='origin'||n.state==='target') return 12;
+  if(n.state==='suspicious') return 9;
+  return 6;
+}
+
+function drawLoop(){
+  pulseT += 0.03;
+  const W = cwrap.getBoundingClientRect().width;
+  const H = cwrap.getBoundingClientRect().height;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+
+  edges.forEach((e,ei)=>{
+    const a=nodes[e.a], b=nodes[e.b];
+    const isRevealed = revealedEdges.has(ei);
+    ctx.save();
+    ctx.globalAlpha = isRevealed ? 0.65 : 0.10;
+    ctx.strokeStyle = e.suspicious ? '#EF9F27' : '#888780';
+    ctx.lineWidth   = e.suspicious ? 1.5 : 0.7;
+    if(!isRevealed) ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    if(isRevealed && e.suspicious){
+      const angle = Math.atan2(b.y-a.y,b.x-a.x);
+      const tr = nodeRadius(b)+4;
+      const ex = b.x - Math.cos(angle)*tr;
+      const ey = b.y - Math.sin(angle)*tr;
+      ctx.globalAlpha=0.7;
+      ctx.fillStyle='#EF9F27';
+      ctx.beginPath();
+      ctx.moveTo(ex,ey);
+      ctx.lineTo(ex-8*Math.cos(angle-0.4), ey-8*Math.sin(angle-0.4));
+      ctx.lineTo(ex-8*Math.cos(angle+0.4), ey-8*Math.sin(angle+0.4));
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  });
+
+  activeParticles = activeParticles.filter(p=>!p.done);
+  activeParticles.forEach(p=>{
+    p.progress += p.speed;
+    if(p.progress>=1){ p.done=true; return; }
+    const t  = p.progress;
+    const px = p.x + (p.tx-p.x)*t;
+    const py = p.y + (p.ty-p.y)*t;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(px,py,4.5,0,Math.PI*2);
+    ctx.fillStyle=p.color; ctx.globalAlpha=0.9; ctx.fill();
+    ctx.beginPath(); ctx.arc(px,py,7,0,Math.PI*2);
+    ctx.fillStyle=p.color; ctx.globalAlpha=0.22; ctx.fill();
+    ctx.restore();
+  });
+
+  nodes.forEach((n,i)=>{
+    if(!revealedNodes.has(i) && n.state==='idle') {
+      ctx.save();
+      ctx.globalAlpha=0.35;
+      ctx.beginPath(); ctx.arc(n.x,n.y,5,0,Math.PI*2);
+      ctx.fillStyle='#B4B2A9'; ctx.fill();
+      ctx.restore();
+      return;
+    }
+    const col = nodeColor(n);
+    const r   = nodeRadius(n);
+    const isOrigin = n.state==='origin';
+    const isTarget = n.state==='target';
+    const pulse = (isOrigin||isTarget) ? Math.sin(pulseT*2.5)*0.1+1 : 1;
+
+    ctx.save();
+    if(isOrigin||isTarget){
+      ctx.beginPath(); ctx.arc(n.x,n.y,(r+8)*pulse,0,Math.PI*2);
+      ctx.fillStyle=col.stroke;
+      ctx.globalAlpha=(Math.sin(pulseT*2.5)*0.25+0.65)*0.18;
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    ctx.beginPath(); ctx.arc(n.x,n.y,r*pulse,0,Math.PI*2);
+    ctx.fillStyle=col.fill; ctx.fill();
+    ctx.strokeStyle=col.stroke; ctx.lineWidth=isOrigin||isTarget?2:1; ctx.stroke();
+
+    if(r>=9){
+      ctx.fillStyle=col.text;
+      ctx.font=`500 8px ${getComputedStyle(document.body).fontFamily}`;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(n.id.replace('W',''), n.x, n.y+r+3);
+    }
+
+    if(isOrigin){
+      ctx.fillStyle=col.text;
+      ctx.font=`500 9px ${getComputedStyle(document.body).fontFamily}`;
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillText('ORIGEM', n.x, n.y-r-4);
+    }
+    if(isTarget){
+      ctx.fillStyle='#791F1F';
+      ctx.font=`500 9px ${getComputedStyle(document.body).fontFamily}`;
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillText('DESTINO', n.x, n.y-r-4);
+    }
+    ctx.restore();
+  });
+
+  animId = requestAnimationFrame(drawLoop);
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  const mx=e.clientX-r.left, my=e.clientY-r.top;
+  const h=nodes.find(n=>Math.hypot(n.x-mx,n.y-my)<nodeRadius(n)+7);
+  const tt=document.getElementById('tt');
+  if(h){
+    tt.style.display='block';
+    tt.style.left=(mx+14)+'px'; tt.style.top=(my-8)+'px';
+    document.getElementById('tt-title').textContent=h.id;
+    const pathsThru = tracedPaths.filter(p=>p.nodes.includes(nodes.indexOf(h)));
+    document.getElementById('tt-body').innerHTML=`
+      <div class="tt-row">Tipo: ${h.type==='origin'?'Origem':h.type==='target'?'Destino final':h.state==='suspicious'?'Intermediária suspeita':'Inocente'}</div>
+      <div class="tt-row">BTC: ${h.btc}</div>
+      <div class="tt-row">Transações: ${h.txCount}</div>
+      ${pathsThru.length?`<div class="tt-row" style="color:var(--amber);margin-top:3px">Em ${pathsThru.length} caminho(s) suspeito(s)</div>`:''}
+    `;
+  } else { tt.style.display='none'; }
+});
+canvas.addEventListener('mouseleave',()=>{ document.getElementById('tt').style.display='none'; });
+
+window.addEventListener('resize',()=>{
+  cancelAnimationFrame(animId);
+  animId=requestAnimationFrame(drawLoop);
+});
+
+buildGraph();
+animId=requestAnimationFrame(drawLoop);
+</script>
+</body>
+</html>

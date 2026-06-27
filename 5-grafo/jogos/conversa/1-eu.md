@@ -1,0 +1,1 @@
+ideias para um trabalho, para um jogo. para a minha materia de grafos na ciencia da computacao.

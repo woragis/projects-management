@@ -1,0 +1,1 @@
+quais seriam outros algoritmos? de mais exemplos de missoes e outros algoritmos que usariamos cada um. tipo louvain, knn, etc. muitos outros algoritmos

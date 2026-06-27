@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FakeRadar — Apresentação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="deck" id="deck">
+    <!-- Slide 1 — Capa -->
+    <section class="slide active" data-slide="1">
+      <div class="slide-inner slide-cover">
+        <div class="cover-glow" aria-hidden="true"></div>
+        <p class="eyebrow">Tópicos Avançados em Computação</p>
+        <h1 class="cover-title">
+          <span class="logo-mark" aria-hidden="true">◎</span>
+          FakeRadar
+        </h1>
+        <p class="cover-subtitle">Detector de fake news com portal público e análise assistida por IA</p>
+        <div class="team">
+          <span>Jezreel de Andrade</span>
+          <span>Daniel Sales</span>
+          <span>Vinicius Emanuel</span>
+          <span>Maria Clara</span>
+        </div>
+        <p class="cover-date">2026</p>
+      </div>
+    </section>
+
+    <!-- Slide 2 — O problema -->
+    <section class="slide" data-slide="2">
+      <div class="slide-inner">
+        <p class="slide-num">02 / 18</p>
+        <h2>O problema</h2>
+        <p class="slide-lead">
+          A desinformação se espalha mais rápido que a verificação. O usuário comum não tem tempo nem ferramentas para checar cada manchete.
+        </p>
+        <div class="cards three">
+          <article class="card">
+            <div class="card-icon">📱</div>
+            <h3>Volume absurdo</h3>
+            <p>Milhares de links e textos circulam a cada hora em redes, grupos e portais.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon">🤔</div>
+            <h3>Difícil de avaliar</h3>
+            <p>Manchetes sensacionalistas parecem plausíveis; fontes reais exigem cruzamento de dados.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon">🔁</div>
+            <h3>Repetição sem checagem</h3>
+            <p>A mesma notícia é compartilhada dezenas de vezes sem ninguém confirmar o conteúdo.</p>
+          </article>
+        </div>
+        <blockquote class="highlight-quote">
+          “Como saber se posso confiar nessa matéria <em>agora</em>, sem virar fact-checker?”
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- Slide 3 — Nossa proposta -->
+    <section class="slide" data-slide="3">
+      <div class="slide-inner">
+        <p class="slide-num">03 / 18</p>
+        <h2>Nossa proposta</h2>
+        <p class="slide-lead">
+          O FakeRadar recebe uma URL ou texto, analisa com IA e fontes externas, e publica o resultado em um catálogo aberto para todos consultarem.
+        </p>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <span class="flow-badge">1</span>
+            <div>
+              <strong>Cole a URL</strong>
+              <p>Interface simples — um clique em <em>Escanear</em>.</p>
+            </div>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step">
+            <span class="flow-badge">2</span>
+            <div>
+              <strong>Receba o veredito</strong>
+              <p>Score de credibilidade, classificação e explicação em português.</p>
+            </div>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step">
+            <span class="flow-badge">3</span>
+            <div>
+              <strong>Consulte fontes</strong>
+              <p>Claims extraídos, reputação do domínio e resultados de fact-check.</p>
+            </div>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step">
+            <span class="flow-badge">4</span>
+            <div>
+              <strong>Portal reutilizável</strong>
+              <p>URL já analisada? Mostra o último resultado — sem rodar IA de novo.</p>
+            </div>
+          </div>
+        </div>
+        <div class="pill-row">
+          <span class="pill ok">Confiável</span>
+          <span class="pill warn">Suspeito</span>
+          <span class="pill danger">Falso</span>
+          <span class="pill neutral">Leitura pública sem login</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4 — Arquitetura macro -->
+    <section class="slide" data-slide="4">
+      <div class="slide-inner">
+        <p class="slide-num">04 / 18</p>
+        <h2>Arquitetura macro</h2>
+        <p class="slide-lead">
+          Microsserviços orquestrados via Docker Compose — cada peça com responsabilidade clara.
+        </p>
+        <div class="arch-layout">
+          <div class="arch-diagram" aria-label="Diagrama de arquitetura do FakeRadar">
+            <svg viewBox="0 0 900 420" class="arch-svg" role="img">
+              <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 Z" fill="rgba(0,194,224,0.7)" />
+                </marker>
+              </defs>
+              <!-- wires -->
+              <path class="arch-wire" d="M 120 210 L 220 120" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 280 120 L 400 210" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 480 210 L 620 120" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 480 210 L 620 300" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 480 210 L 480 340" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 620 300 L 760 300" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 620 300 L 480 210" marker-end="url(#arrow)" />
+              <path class="arch-wire dashed" d="M 400 210 L 220 300" marker-end="url(#arrow)" />
+              <path class="arch-wire" d="M 480 340 L 620 360" marker-end="url(#arrow)" />
+
+              <!-- nodes -->
+              <g class="arch-node" transform="translate(60,190)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">Usuário</text>
+                <text x="60" y="42" class="arch-port">navegador</text>
+              </g>
+              <g class="arch-node accent" transform="translate(200,90)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">Frontend</text>
+                <text x="60" y="42" class="arch-port">:3000</text>
+              </g>
+              <g class="arch-node accent" transform="translate(380,190)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">API</text>
+                <text x="60" y="42" class="arch-port">:8080</text>
+              </g>
+              <g class="arch-node" transform="translate(600,90)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">PostgreSQL</text>
+                <text x="60" y="42" class="arch-port">cache URL</text>
+              </g>
+              <g class="arch-node accent" transform="translate(600,270)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">Serviço IA</text>
+                <text x="60" y="42" class="arch-port">:8000</text>
+              </g>
+              <g class="arch-node" transform="translate(740,270)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">Serper</text>
+                <text x="60" y="42" class="arch-port">busca web</text>
+              </g>
+              <g class="arch-node" transform="translate(200,270)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">Portal</text>
+                <text x="60" y="42" class="arch-port">público</text>
+              </g>
+              <g class="arch-node" transform="translate(440,330)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">RabbitMQ</text>
+                <text x="60" y="42" class="arch-port">fila logs</text>
+              </g>
+              <g class="arch-node" transform="translate(600,340)">
+                <rect width="120" height="56" rx="10" />
+                <text x="60" y="24" class="arch-label">Log worker</text>
+                <text x="60" y="42" class="arch-port">assíncrono</text>
+              </g>
+            </svg>
+          </div>
+          <ul class="arch-legend">
+            <li><strong>Frontend</strong> — portal, dashboard e detalhe da análise</li>
+            <li><strong>API</strong> — autenticação, cache, regras do portal</li>
+            <li><strong>IA</strong> — scrape, claims, fact-check, score</li>
+            <li><strong>PostgreSQL</strong> — catálogo público e histórico de versões</li>
+            <li><strong>RabbitMQ</strong> — logging sem bloquear a resposta ao usuário</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5 — Dois cenários -->
+    <section class="slide" data-slide="5">
+      <div class="slide-inner">
+        <p class="slide-num">05 / 18</p>
+        <h2>Dois cenários de fluxo</h2>
+        <p class="slide-lead">
+          O comportamento muda conforme a URL já foi analisada — economia de IA e transparência para o usuário.
+        </p>
+        <div class="scenario-grid">
+          <article class="scenario-card new">
+            <header>
+              <span class="scenario-tag">Cenário A</span>
+              <h3>URL nova</h3>
+            </header>
+            <ol class="scenario-steps">
+              <li>POST <code>/api/analyses</code></li>
+              <li>Cache miss no PostgreSQL</li>
+              <li>IA raspa, extrai claims, consulta Serper</li>
+              <li>LLM calcula score e veredito</li>
+              <li>Salva no banco + log na fila</li>
+              <li>Entra no portal público</li>
+            </ol>
+            <footer class="scenario-result reliable">
+              <span>85%</span>
+              <div>
+                <strong>Confiável</strong>
+                <p>Análise completa executada agora</p>
+              </div>
+            </footer>
+          </article>
+
+          <article class="scenario-card cache">
+            <header>
+              <span class="scenario-tag">Cenário B</span>
+              <h3>URL em cache</h3>
+            </header>
+            <ol class="scenario-steps">
+              <li>POST <code>/api/analyses</code></li>
+              <li class="skip">Cache hit — IA <em>não</em> é chamada</li>
+              <li class="skip">Serper e scrape pulados</li>
+              <li>Devolve análise existente</li>
+              <li>Banner: “análise anterior em …”</li>
+              <li>Reanálise só após cooldown 24h</li>
+            </ol>
+            <footer class="scenario-result cache-hit">
+              <span>⏱</span>
+              <div>
+                <strong>Resultado reutilizado</strong>
+                <p>Resposta rápida, sem custo de IA</p>
+              </div>
+            </footer>
+          </article>
+        </div>
+        <p class="slide-footnote">
+          Demo interativa disponível em <code>demonstracao-arquitetura/</code> — anima o pacote de dados entre os serviços.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 6 — Frontend: telas -->
+    <section class="slide" data-slide="6">
+      <div class="slide-inner">
+        <p class="slide-num">06 / 18</p>
+        <p class="section-tag">// frontend · Next.js 16</p>
+        <h2>Telas principais</h2>
+        <p class="slide-lead">
+          O frontend separa leitura pública (portal) de ações autenticadas (escanear, reanalisar, excluir).
+        </p>
+        <div class="screens three">
+          <article class="screen-mock">
+            <header class="screen-bar"><span class="screen-dot"></span><code>/</code></header>
+            <div class="screen-body">
+              <p class="screen-title">Notícias verificadas</p>
+              <div class="screen-search">Buscar…</div>
+              <div class="screen-filters">
+                <span class="chip active">Todos</span>
+                <span class="chip ok">Confiável</span>
+                <span class="chip warn">Suspeito</span>
+              </div>
+              <div class="screen-card">
+                <span class="badge ok">85%</span>
+                <span class="screen-card-text">g1.globo.com/…</span>
+              </div>
+              <div class="screen-card dim">
+                <span class="badge warn">42%</span>
+                <span class="screen-card-text">exemplo.com/…</span>
+              </div>
+            </div>
+            <footer class="screen-caption"><strong>Portal</strong> — feed público, sem login</footer>
+          </article>
+
+          <article class="screen-mock">
+            <header class="screen-bar"><span class="screen-dot"></span><code>/dashboard</code></header>
+            <div class="screen-body">
+              <p class="screen-title">Escanear notícia</p>
+              <label class="screen-field">URL da matéria</label>
+              <div class="screen-input filled">https://g1.globo.com/…</div>
+              <label class="screen-field">Texto (opcional)</label>
+              <div class="screen-input">— ignorado se URL preenchida —</div>
+              <button class="screen-btn">◎ Escanear</button>
+            </div>
+            <footer class="screen-caption"><strong>Dashboard</strong> — envio autenticado</footer>
+          </article>
+
+          <article class="screen-mock">
+            <header class="screen-bar"><span class="screen-dot"></span><code>/items/[id]</code></header>
+            <div class="screen-body">
+              <div class="screen-hero reliable">
+                <span class="ring-sm">85%</span>
+                <div>
+                  <strong>Confiável</strong>
+                  <p>Analisado em 04/06/2026</p>
+                </div>
+              </div>
+              <p class="screen-claims">3 alegações · 2 fontes</p>
+              <div class="screen-claim">› Zelensky propôs encontro com Putin</div>
+            </div>
+            <footer class="screen-caption"><strong>Detalhe</strong> — veredito, claims e versões</footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7 — Frontend: UX -->
+    <section class="slide" data-slide="7">
+      <div class="slide-inner">
+        <p class="slide-num">07 / 18</p>
+        <p class="section-tag">// frontend · transparência</p>
+        <h2>UX e regras visíveis</h2>
+        <p class="slide-lead">
+          A interface deixa explícito quando o resultado veio de cache, quando pode reanalisar e quem pode excluir.
+        </p>
+        <div class="ux-grid">
+          <article class="ux-panel">
+            <h3>Banner de cache</h3>
+            <div class="ux-mock banner-cache">
+              ⏱ Esta URL já foi analisada. Exibindo resultado de <strong>04/06/2026 18:18</strong>. Nenhuma nova verificação foi executada agora.
+            </div>
+            <p>Resposta da API com <code>fromCache: true</code> dispara o aviso amarelo.</p>
+          </article>
+          <article class="ux-panel">
+            <h3>Reanálise e versões</h3>
+            <div class="ux-mock">
+              <button class="screen-btn small ghost">↻ Reanalisar</button>
+              <span class="ux-hint">Disponível após cooldown de 24h</span>
+              <ul class="version-list">
+                <li><span>v2</span> 05/06/2026 — 82% Confiável</li>
+                <li class="current"><span>v1</span> 04/06/2026 — 85% Confiável</li>
+              </ul>
+            </div>
+            <p>Histórico em <code>GET /portal/items/:id/versions</code>.</p>
+          </article>
+          <article class="ux-panel">
+            <h3>Exclusão restrita</h3>
+            <div class="ux-mock">
+              <button class="screen-btn small danger">Excluir do portal</button>
+              <p class="ux-rule">Só quem submeteu primeiro, dentro de <strong>30 minutos</strong>.</p>
+            </div>
+            <p>Após a janela, o item permanece no catálogo público.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8 — Backend: API -->
+    <section class="slide" data-slide="8">
+      <div class="slide-inner">
+        <p class="slide-num">08 / 18</p>
+        <p class="section-tag">// backend · Node.js + Express + Prisma</p>
+        <h2>API e responsabilidades</h2>
+        <p class="slide-lead">
+          O backend orquestra autenticação, cache por URL normalizada e exposição pública do catálogo.
+        </p>
+        <div class="route-grid">
+          <div class="route-group">
+            <h3>Autenticação</h3>
+            <table class="route-table">
+              <tr><td><code>POST</code></td><td><code>/api/auth/register</code></td><td>Criar conta</td></tr>
+              <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>JWT</td></tr>
+            </table>
+          </div>
+          <div class="route-group">
+            <h3>Análises (auth)</h3>
+            <table class="route-table">
+              <tr><td><code>POST</code></td><td><code>/api/analyses</code></td><td>Nova análise ou cache hit</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/analyses</code></td><td>Histórico do usuário</td></tr>
+            </table>
+          </div>
+          <div class="route-group">
+            <h3>Portal (público)</h3>
+            <table class="route-table">
+              <tr><td><code>GET</code></td><td><code>/api/portal/items</code></td><td>Feed paginado</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/portal/items/:id</code></td><td>Detalhe + análise</td></tr>
+              <tr><td><code>POST</code></td><td><code>…/reanalyze</code></td><td>Nova rodada (auth)</td></tr>
+            </table>
+          </div>
+        </div>
+        <p class="slide-footnote">Stack: Express · Prisma ORM · PostgreSQL · validação Zod</p>
+      </div>
+    </section>
+
+    <!-- Slide 9 — Backend: cache -->
+    <section class="slide" data-slide="9">
+      <div class="slide-inner">
+        <p class="slide-num">09 / 18</p>
+        <p class="section-tag">// backend · regras de negócio</p>
+        <h2>Cache e políticas do portal</h2>
+        <p class="slide-lead">
+          Decisões que evitam retrabalho na IA e definem o comportamento público do catálogo.
+        </p>
+        <div class="policy-grid">
+          <article class="policy-card">
+            <span class="policy-icon">🔑</span>
+            <h3>Chave canônica</h3>
+            <p>URL normalizada vira <code>canonicalKey</code> — mesmo link com parâmetros diferentes reutiliza o resultado.</p>
+            <p class="policy-detail">URL + texto no envio → <strong>só a URL</strong> define a chave.</p>
+          </article>
+          <article class="policy-card">
+            <span class="policy-icon">⏳</span>
+            <h3>Cooldown 24h</h3>
+            <p>Reanálise bloqueada até <code>REANALYZE_COOLDOWN_HOURS=24</code> após a última rodada.</p>
+            <p class="policy-detail">API retorna <code>canReanalyze</code> e <code>nextReanalyzeAt</code>.</p>
+          </article>
+          <article class="policy-card">
+            <span class="policy-icon">🗑</span>
+            <h3>Janela de exclusão</h3>
+            <p>Quem submeteu primeiro pode excluir em até <strong>30 minutos</strong> (<code>DELETE_WINDOW_MINUTES</code>).</p>
+            <p class="policy-detail">Remove <code>ContentItem</code> e análises vinculadas.</p>
+          </article>
+          <article class="policy-card">
+            <span class="policy-icon">📖</span>
+            <h3>Leitura pública</h3>
+            <p>Portal acessível sem JWT — qualquer visitante lê feed e detalhe.</p>
+            <p class="policy-detail">Escrita (escanear, reanalisar) exige login.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10 — Modelo de dados -->
+    <section class="slide" data-slide="10">
+      <div class="slide-inner">
+        <p class="slide-num">10 / 18</p>
+        <p class="section-tag">// backend · PostgreSQL</p>
+        <h2>Modelo de dados</h2>
+        <p class="slide-lead">
+          Separamos o <strong>conteúdo público</strong> (matéria) da <strong>rodada de análise</strong> (snapshot com score e claims).
+        </p>
+        <div class="model-layout">
+          <div class="er-diagram">
+            <div class="er-entity main">
+              <h4>ContentItem</h4>
+              <ul>
+                <li>canonicalKey</li>
+                <li>displayUrl / snippet</li>
+                <li>latestAnalysisId</li>
+                <li>analysisCount</li>
+                <li>firstAnalyzedAt</li>
+              </ul>
+            </div>
+            <div class="er-relation">1 ── *</div>
+            <div class="er-entity">
+              <h4>Analysis</h4>
+              <ul>
+                <li>versionNumber</li>
+                <li>credibilityScore</li>
+                <li>verdict</li>
+                <li>fromCache</li>
+                <li>triggeredByUserId</li>
+              </ul>
+            </div>
+            <div class="er-branch">
+              <div class="er-entity small">
+                <h4>Claim</h4>
+                <ul><li>text, isVerified</li></ul>
+              </div>
+              <div class="er-entity small">
+                <h4>AnalysisSource</h4>
+                <ul><li>domain, reputation</li></ul>
+              </div>
+            </div>
+          </div>
+          <div class="model-notes">
+            <div class="note-item">
+              <strong>Cache hit</strong>
+              <p>Busca <code>ContentItem</code> por <code>canonicalKey</code> → devolve <code>latestAnalysis</code> sem chamar IA.</p>
+            </div>
+            <div class="note-item">
+              <strong>Nova versão</strong>
+              <p>Reanálise cria novo <code>Analysis</code> com <code>versionNumber++</code> e atualiza o ponteiro no item.</p>
+            </div>
+            <div class="note-item">
+              <strong>Migração</strong>
+              <p>Análises antigas migradas para o modelo portal sem perda de dados.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11 — IA: pipeline -->
+    <section class="slide" data-slide="11">
+      <div class="slide-inner">
+        <p class="slide-num">11 / 18</p>
+        <p class="section-tag">// serviço de IA · FastAPI :8000</p>
+        <h2>Pipeline de análise</h2>
+        <p class="slide-lead">
+          Endpoint <code>POST /ai/analyze</code> — pipeline sequencial com tratamento de erro em cada etapa.
+        </p>
+        <div class="pipeline">
+          <div class="pipe-step">
+            <span class="pipe-num">1</span>
+            <div>
+              <strong>Scrape da URL</strong>
+              <p>Extrai corpo do artigo (G1, Globo…). Com URL, o texto opcional do usuário é ignorado.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="pipe-num">2</span>
+            <div>
+              <strong>Extração de claims</strong>
+              <p>LLM + spaCy identificam alegações factuais verificáveis no texto.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="pipe-num">3</span>
+            <div>
+              <strong>Fact-check</strong>
+              <p>Google Fact Check Tools + fallback Serper para corroborar cada claim.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="pipe-num">4</span>
+            <div>
+              <strong>Score de credibilidade</strong>
+              <p>LLM pondera claims, reputação do domínio, data de referência e fontes.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="pipe-num">5</span>
+            <div>
+              <strong>Resposta estruturada</strong>
+              <p><code>credibility_score</code>, <code>verdict</code>, <code>claims[]</code>, <code>sources[]</code>, <code>explanation</code> em PT.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 12 — IA: fontes externas -->
+    <section class="slide" data-slide="12">
+      <div class="slide-inner">
+        <p class="slide-num">12 / 18</p>
+        <p class="section-tag">// serviço de IA · integrações</p>
+        <h2>Fontes externas e reputação</h2>
+        <p class="slide-lead">
+          A credibilidade não vem só do LLM — cruzamos dados de APIs e uma lista de reputação de domínios.
+        </p>
+        <div class="api-cards four">
+          <article class="api-card">
+            <h3>Anthropic Claude</h3>
+            <p class="api-role">Claims + scoring</p>
+            <p>Extrai alegações e gera parecer final em português.</p>
+          </article>
+          <article class="api-card">
+            <h3>Google Fact Check</h3>
+            <p class="api-role">Verificação direta</p>
+            <p>Consulta base de fact-checkers quando há match.</p>
+          </article>
+          <article class="api-card">
+            <h3>Serper</h3>
+            <p class="api-role">Fallback web</p>
+            <p>Busca <code>gl=br</code> quando Fact Check não retorna resultado.</p>
+          </article>
+          <article class="api-card">
+            <h3>Reputação de domínio</h3>
+            <p class="api-role">Heurística local</p>
+            <p>G1, Folha, BBC etc. recebem score elevado; satíra é sinalizada.</p>
+          </article>
+        </div>
+        <blockquote class="highlight-quote">
+          Inconclusivo no fact-check <em>não</em> significa falso — o scorer pondera o conjunto antes do veredito.
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- Slide 13 — IA: veredito -->
+    <section class="slide" data-slide="13">
+      <div class="slide-inner">
+        <p class="slide-num">13 / 18</p>
+        <p class="section-tag">// serviço de IA · resultado</p>
+        <h2>Veredito e score</h2>
+        <p class="slide-lead">
+          O score (0–100%) é convertido em três faixas visuais no frontend — com explicação textual para o usuário.
+        </p>
+        <div class="verdict-layout">
+          <div class="verdict-scale">
+            <div class="scale-row reliable">
+              <span class="scale-range">≥ 70%</span>
+              <span class="scale-label">RELIABLE</span>
+              <span class="scale-pt">Confiável</span>
+            </div>
+            <div class="scale-row suspicious">
+              <span class="scale-range">40–69%</span>
+              <span class="scale-label">SUSPICIOUS</span>
+              <span class="scale-pt">Suspeito</span>
+            </div>
+            <div class="scale-row fake">
+              <span class="scale-range">&lt; 40%</span>
+              <span class="scale-label">FAKE</span>
+              <span class="scale-pt">Falso</span>
+            </div>
+          </div>
+          <div class="verdict-example">
+            <div class="example-header">Exemplo real testado</div>
+            <p class="example-url">g1.globo.com — Trump x Lula</p>
+            <div class="example-result reliable">
+              <span>85%</span>
+              <div>
+                <strong>Confiável</strong>
+                <p>Matéria do G1 reporta evento verificável; alegações corroboradas em veículos confiáveis.</p>
+              </div>
+            </div>
+            <ul class="example-meta">
+              <li>3 claims extraídos</li>
+              <li>Serper retornou fontes brasileiras</li>
+              <li>Domínio G1: reputação 0,92</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 14 — Docker -->
+    <section class="slide" data-slide="14">
+      <div class="slide-inner">
+        <p class="slide-num">14 / 18</p>
+        <p class="section-tag">// infraestrutura · Docker Compose</p>
+        <h2>Orquestração de serviços</h2>
+        <p class="slide-lead">
+          Um único <code>docker compose up</code> sobe toda a stack — com healthchecks e variáveis centralizadas no <code>.env</code>.
+        </p>
+        <div class="docker-grid">
+          <article class="docker-svc">
+            <span class="docker-port">:5432</span>
+            <strong>PostgreSQL</strong>
+            <p>Dados + cache URL</p>
+          </article>
+          <article class="docker-svc">
+            <span class="docker-port">:5672</span>
+            <strong>RabbitMQ</strong>
+            <p>Fila de eventos</p>
+          </article>
+          <article class="docker-svc accent">
+            <span class="docker-port">:8080</span>
+            <strong>API</strong>
+            <p>Prisma migrate deploy</p>
+          </article>
+          <article class="docker-svc accent">
+            <span class="docker-port">:8000</span>
+            <strong>AI</strong>
+            <p>FastAPI + Swagger</p>
+          </article>
+          <article class="docker-svc">
+            <span class="docker-port">—</span>
+            <strong>Logging worker</strong>
+            <p>Consumer da fila</p>
+          </article>
+          <article class="docker-svc">
+            <span class="docker-port">:3000</span>
+            <strong>Frontend</strong>
+            <p>Next.js (dev local opcional)</p>
+          </article>
+        </div>
+        <div class="env-row">
+          <span class="env-chip">LLM_API_KEY</span>
+          <span class="env-chip">SERPER_API_KEY</span>
+          <span class="env-chip">REANALYZE_COOLDOWN_HOURS=24</span>
+          <span class="env-chip">AI_MOCK_LLM=true</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 15 — Logging -->
+    <section class="slide" data-slide="15">
+      <div class="slide-inner">
+        <p class="slide-num">15 / 18</p>
+        <p class="section-tag">// infraestrutura · observabilidade</p>
+        <h2>Logging assíncrono</h2>
+        <p class="slide-lead">
+          Eventos de análise vão para RabbitMQ — o usuário recebe a resposta sem esperar a gravação do log.
+        </p>
+        <div class="async-flow">
+          <div class="async-step">API publica <code>analysis.created</code></div>
+          <div class="async-arrow">↓</div>
+          <div class="async-step">Fila <code>fakeradar.logs</code></div>
+          <div class="async-arrow">↓</div>
+          <div class="async-step">Logging worker consome</div>
+          <div class="async-arrow">↓</div>
+          <div class="async-step">Arquivos <code>.log</code> em volume Docker</div>
+        </div>
+        <div class="cards two">
+          <article class="card">
+            <h3>Por que assíncrono?</h3>
+            <p>Logging não bloqueia o POST — latência da análise já é dominada pela IA.</p>
+          </article>
+          <article class="card">
+            <h3>Onde loga</h3>
+            <p>API, serviço IA e worker publicam eventos — rastreio do fluxo ponta a ponta.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 16 — Demo -->
+    <section class="slide" data-slide="16">
+      <div class="slide-inner">
+        <p class="slide-num">16 / 18</p>
+        <p class="section-tag">// demonstração</p>
+        <h2>Demo ao vivo</h2>
+        <p class="slide-lead">
+          Duas formas de mostrar o fluxo de dados — estática (segura) ou com o sistema rodando.
+        </p>
+        <div class="demo-grid">
+          <article class="demo-card">
+            <span class="demo-icon">🎬</span>
+            <h3>Demo interativa (HTML)</h3>
+            <p>Pasta <code>demonstracao-arquitetura/</code></p>
+            <ul>
+              <li>Anima pacote entre serviços</li>
+              <li>Cenário URL nova vs cache</li>
+              <li>JSON por etapa</li>
+              <li>Funciona offline</li>
+            </ul>
+          </article>
+          <article class="demo-card accent">
+            <span class="demo-icon">🚀</span>
+            <h3>Sistema completo</h3>
+            <p><code>docker compose up</code> + <code>npm run dev</code></p>
+            <ul>
+              <li>Portal em <code>localhost:3000</code></li>
+              <li>Colar URL do G1 e escanear</li>
+              <li>Ver badge e detalhe no portal</li>
+              <li>Repetir URL → banner de cache</li>
+            </ul>
+          </article>
+        </div>
+        <p class="slide-footnote">Sugestão: abrir a demo HTML no slide 16 e o app real na pergunta da banca.</p>
+      </div>
+    </section>
+
+    <!-- Slide 17 — Desafios -->
+    <section class="slide" data-slide="17">
+      <div class="slide-inner">
+        <p class="slide-num">17 / 18</p>
+        <p class="section-tag">// aprendizados</p>
+        <h2>Desafios e soluções</h2>
+        <p class="slide-lead">
+          Problemas reais encontrados durante o desenvolvimento e como foram resolvidos.
+        </p>
+        <div class="challenge-list">
+          <article class="challenge">
+            <span class="challenge-tag fixed">Corrigido</span>
+            <h3>URL + texto ignorava o artigo</h3>
+            <p>IA analisava a pergunta do usuário em vez de raspar a URL. Fix: URL sempre dispara scrape.</p>
+          </article>
+          <article class="challenge">
+            <span class="challenge-tag fixed">Corrigido</span>
+            <h3>Fact-check vazio = falso</h3>
+            <p>Inconclusivo era tratado como negativo. Fix: scorer pondera inconclusivo separadamente + Serper.</p>
+          </article>
+          <article class="challenge">
+            <span class="challenge-tag fixed">Corrigido</span>
+            <h3>Migração Prisma</h3>
+            <p><code>db push</code> falhou com dados legados. Fix: migração SQL manual + <code>migrate deploy</code>.</p>
+          </article>
+          <article class="challenge">
+            <span class="challenge-tag open">Limitação</span>
+            <h3>Dependência de APIs externas</h3>
+            <p>Custo e latência do LLM; scrape falha em sites com paywall ou layout atípico.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 18 — Conclusão -->
+    <section class="slide" data-slide="18">
+      <div class="slide-inner slide-cover slide-closing">
+        <p class="slide-num">18 / 18</p>
+        <h2>O que entregamos</h2>
+        <ul class="closing-list">
+          <li>Portal público de notícias verificadas — leitura sem login</li>
+          <li>Cache inteligente por URL — economia de IA e resposta rápida</li>
+          <li>Pipeline de IA com scrape, claims, fact-check e score explicável</li>
+          <li>Arquitetura de microsserviços containerizada e observável</li>
+        </ul>
+        <div class="team closing-team">
+          <span>Jezreel de Andrade</span>
+          <span>Daniel Sales</span>
+          <span>Vinicius Emanuel</span>
+          <span>Maria Clara</span>
+        </div>
+        <p class="closing-thanks">Obrigado — perguntas?</p>
+        <p class="cover-date">FakeRadar · 2026</p>
+      </div>
+    </section>
+  </div>
+
+  <nav class="controls" aria-label="Navegação dos slides">
+    <button id="btn-prev" class="ctrl-btn" aria-label="Slide anterior" disabled>←</button>
+    <div class="progress">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <span class="progress-label" id="progress-label">1 / 5</span>
+    <button id="btn-next" class="ctrl-btn" aria-label="Próximo slide">→</button>
+  </nav>
+
+  <div class="dots" id="dots" aria-hidden="true"></div>
+
+  <p class="hint">← → ou Espaço para navegar · F para tela cheia</p>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+#app{padding:1rem 0}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.top label{font-size:13px;color:var(--color-text-secondary)}
+.top select,.top button{font-size:13px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.panel-title{font-size:13px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+canvas{display:block;width:100%;image-rendering:pixelated;border-radius:6px;border:0.5px solid var(--color-border-tertiary)}
+.stats{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:6px 10px}
+.stat-label{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em}
+.stat-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.leg-box{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button{background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:6px 14px;font-size:13px;color:var(--color-text-primary);cursor:pointer;transition:background .15s}
+button:hover{background:var(--color-background-secondary)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{border-color:var(--color-border-info);color:var(--color-text-info)}
+select{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 10px;color:var(--color-text-primary);font-size:13px}
+.status{font-size:12px;color:var(--color-text-secondary);margin-top:6px;min-height:16px}
+.badge{font-size:11px;padding:2px 8px;border-radius:12px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.badge.done{background:#EAF3DE;color:#27500A}
+.badge.running{background:#FAEEDA;color:#633806}
+.badge.idle{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+</style>
+
+<div id="app">
+<h2 class="sr-only">Solucionador de labirinto interativo com BFS e DFS</h2>
+
+<div class="top">
+  <label>Tamanho:</label>
+  <select id="sizeSelect" onchange="init()">
+    <option value="15">15×15 (fácil)</option>
+    <option value="21" selected>21×21 (médio)</option>
+    <option value="31">31×31 (difícil)</option>
+  </select>
+  <label>Velocidade:</label>
+  <select id="speedSelect">
+    <option value="80">lenta</option>
+    <option value="30" selected>média</option>
+    <option value="8">rápida</option>
+    <option value="1">turbo</option>
+  </select>
+</div>
+
+<div class="btn-row">
+  <button class="primary" id="btnGen" onclick="init()">↻ Novo labirinto</button>
+  <button id="btnRun" onclick="runBoth()">▶ Resolver BFS + DFS</button>
+  <button id="btnStep" onclick="stepBoth()">→ Passo a passo</button>
+  <button id="btnReset" onclick="resetSolvers()">⟳ Resetar busca</button>
+</div>
+
+<div class="panels">
+  <div class="panel">
+    <div class="panel-title">
+      <span class="dot" style="background:#378ADD"></span>
+      BFS — busca em largura
+      <span class="badge" id="bfsBadge">aguardando</span>
+    </div>
+    <canvas id="cvsBFS"></canvas>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">células visitadas</div><div class="stat-val" id="bfsVisited">—</div></div>
+      <div class="stat"><div class="stat-label">tamanho do caminho</div><div class="stat-val" id="bfsPath">—</div></div>
+    </div>
+    <div class="status" id="bfsStatus">BFS encontra sempre o caminho mais curto.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">
+      <span class="dot" style="background:#D85A30"></span>
+      DFS — busca em profundidade
+      <span class="badge" id="dfsBadge">aguardando</span>
+    </div>
+    <canvas id="cvsDFS"></canvas>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">células visitadas</div><div class="stat-val" id="dfsVisited">—</div></div>
+      <div class="stat"><div class="stat-label">tamanho do caminho</div><div class="stat-val" id="dfsPath">—</div></div>
+    </div>
+    <div class="status" id="dfsStatus">DFS explora fundo antes de voltar.</div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-box" style="background:#1a1a1a;border:0.5px solid #444"></div>parede</div>
+  <div class="leg-item"><div class="leg-box" style="background:#f5f4f0;border:0.5px solid #ccc"></div>livre</div>
+  <div class="leg-item"><div class="leg-box" style="background:#1D9E75"></div>início</div>
+  <div class="leg-item"><div class="leg-box" style="background:#D85A30"></div>fim</div>
+  <div class="leg-item"><div class="leg-box" style="background:#B5D4F4"></div>explorado (BFS)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#FAC775"></div>explorado (DFS)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#378ADD"></div>caminho BFS</div>
+  <div class="leg-item"><div class="leg-box" style="background:#EF9F27"></div>caminho DFS</div>
+</div>
+</div>
+
+<script>
+let maze=[], N=21, startCell, endCell;
+let bfsState=null, dfsState=null;
+let animId=null, stepping=false;
+
+const WALL=1, FREE=0;
+const CLR={
+  wall:'#1a1a1a', free:'#f5f4f0',
+  start:'#1D9E75', end:'#D85A30',
+  bfsExplored:'#B5D4F4', dfsExplored:'#FAC775',
+  bfsPath:'#378ADD', dfsPath:'#EF9F27',
+  bfsFrontier:'#085041', dfsFrontier:'#633806'
+};
+
+function getSize(){return parseInt(document.getElementById('sizeSelect').value)}
+function getSpeed(){return parseInt(document.getElementById('speedSelect').value)}
+
+function init(){
+  if(animId){cancelAnimationFrame(animId);animId=null}
+  N=getSize();
+  maze=generateMaze(N);
+  startCell=[1,1];
+  endCell=[N-2,N-2];
+  bfsState=null; dfsState=null;
+  setBadge('bfs','idle','aguardando');
+  setBadge('dfs','idle','aguardando');
+  document.getElementById('bfsVisited').textContent='—';
+  document.getElementById('bfsPath').textContent='—';
+  document.getElementById('dfsVisited').textContent='—';
+  document.getElementById('dfsPath').textContent='—';
+  document.getElementById('bfsStatus').textContent='BFS encontra sempre o caminho mais curto.';
+  document.getElementById('dfsStatus').textContent='DFS explora fundo antes de voltar.';
+  drawMaze('cvsBFS', null, null, 'bfs');
+  drawMaze('cvsDFS', null, null, 'dfs');
+  document.getElementById('btnRun').disabled=false;
+  document.getElementById('btnStep').disabled=false;
+}
+
+function generateMaze(n){
+  const g=Array.from({length:n},()=>Array(n).fill(WALL));
+  function inBounds(r,c){return r>0&&c>0&&r<n-1&&c<n-1}
+  function neighbors2(r,c){
+    return [[r-2,c],[r+2,c],[r,c-2],[r,c+2]].filter(([nr,nc])=>inBounds(nr,nc))
+  }
+  g[1][1]=FREE;
+  const frontier=[];
+  neighbors2(1,1).forEach(([nr,nc])=>frontier.push([nr,nc,1,1]));
+  while(frontier.length){
+    const idx=Math.floor(Math.random()*frontier.length);
+    const [r,c,pr,pc]=frontier.splice(idx,1)[0];
+    if(g[r][c]===WALL){
+      g[r][c]=FREE;
+      g[(r+pr)>>1][(c+pc)>>1]=FREE;
+      neighbors2(r,c).forEach(([nr,nc])=>{
+        if(g[nr][nc]===WALL) frontier.push([nr,nc,r,c]);
+      });
+    }
+  }
+  // garantir saída acessível
+  g[n-2][n-2]=FREE;
+  return g;
+}
+
+function drawMaze(canvasId, visited, path, algo){
+  const cvs=document.getElementById(canvasId);
+  const cs=Math.min(Math.floor(300/N),14);
+  cvs.width=N*cs; cvs.height=N*cs;
+  const ctx=cvs.getContext('2d');
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  for(let r=0;r<N;r++){
+    for(let c=0;c<N;c++){
+      let color=maze[r][c]===WALL?(dark?'#111':'#1a1a1a'):(dark?'#2a2926':'#f5f4f0');
+      if(visited&&visited.has(`${r},${c}`)) color=algo==='bfs'?CLR.bfsExplored:CLR.dfsExplored;
+      if(path){
+        const inPath=path.some(([pr,pc])=>pr===r&&pc===c);
+        if(inPath) color=algo==='bfs'?CLR.bfsPath:CLR.dfsPath;
+      }
+      if(r===startCell[0]&&c===startCell[1]) color=CLR.start;
+      if(r===endCell[0]&&c===endCell[1]) color=CLR.end;
+      ctx.fillStyle=color;
+      ctx.fillRect(c*cs,r*cs,cs,cs);
+    }
+  }
+}
+
+function getNeighbors(r,c){
+  return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]
+    .filter(([nr,nc])=>nr>=0&&nc>=0&&nr<N&&nc<N&&maze[nr][nc]===FREE);
+}
+
+function initBFS(){
+  const visited=new Map();
+  visited.set(`${startCell[0]},${startCell[1]}`, null);
+  return {
+    queue:[startCell], visited, path:null, done:false, type:'bfs',
+    steps:0
+  };
+}
+
+function initDFS(){
+  const visited=new Map();
+  visited.set(`${startCell[0]},${startCell[1]}`, null);
+  return {
+    stack:[startCell], visited, path:null, done:false, type:'dfs',
+    steps:0
+  };
+}
+
+function stepBFS(state){
+  if(state.done||state.queue.length===0){state.done=true;return}
+  const [r,c]=state.queue.shift();
+  state.steps++;
+  if(r===endCell[0]&&c===endCell[1]){
+    state.path=reconstructPath(state.visited,[r,c]);
+    state.done=true; return;
+  }
+  for(const [nr,nc] of getNeighbors(r,c)){
+    const k=`${nr},${nc}`;
+    if(!state.visited.has(k)){
+      state.visited.set(k,`${r},${c}`);
+      state.queue.push([nr,nc]);
+    }
+  }
+}
+
+function stepDFS(state){
+  if(state.done||state.stack.length===0){state.done=true;return}
+  const [r,c]=state.stack.pop();
+  state.steps++;
+  if(r===endCell[0]&&c===endCell[1]){
+    state.path=reconstructPath(state.visited,[r,c]);
+    state.done=true; return;
+  }
+  for(const [nr,nc] of getNeighbors(r,c)){
+    const k=`${nr},${nc}`;
+    if(!state.visited.has(k)){
+      state.visited.set(k,`${r},${c}`);
+      state.stack.push([nr,nc]);
+    }
+  }
+}
+
+function reconstructPath(visited, end){
+  const path=[];
+  let cur=`${end[0]},${end[1]}`;
+  while(cur!==null){
+    const [r,c]=cur.split(',').map(Number);
+    path.push([r,c]);
+    cur=visited.get(cur);
+  }
+  return path.reverse();
+}
+
+function getVisitedSet(state){
+  const s=new Set();
+  for(const k of state.visited.keys()) s.add(k);
+  return s;
+}
+
+function setBadge(algo, type, text){
+  const el=document.getElementById(algo+'Badge');
+  el.className='badge '+type;
+  el.textContent=text;
+}
+
+function updateStats(state){
+  const algo=state.type;
+  const vis=state.visited.size;
+  document.getElementById(algo+'Visited').textContent=vis;
+  if(state.path) document.getElementById(algo+'Path').textContent=state.path.length;
+  if(state.done){
+    if(state.path){
+      setBadge(algo,'done','✓ resolvido');
+      document.getElementById(algo+'Status').textContent=
+        algo==='bfs'
+          ? `BFS visitou ${vis} células e encontrou o caminho mínimo (${state.path.length} passos).`
+          : `DFS visitou ${vis} células. Caminho encontrado: ${state.path.length} passos (pode não ser o menor).`;
+    } else {
+      setBadge(algo,'idle','sem saída');
+    }
+  } else {
+    setBadge(algo,'running','buscando…');
+  }
+}
+
+let frameCount=0;
+function animate(){
+  const speed=getSpeed();
+  frameCount++;
+  const tick=(frameCount % Math.max(1,speed)===0);
+  if(!bfsState.done&&tick) stepBFS(bfsState);
+  if(!dfsState.done&&tick) stepDFS(dfsState);
+  drawMaze('cvsBFS', getVisitedSet(bfsState), bfsState.path, 'bfs');
+  drawMaze('cvsDFS', getVisitedSet(dfsState), dfsState.path, 'dfs');
+  updateStats(bfsState);
+  updateStats(dfsState);
+  if(!bfsState.done||!dfsState.done){
+    animId=requestAnimationFrame(animate);
+  } else {
+    animId=null;
+    document.getElementById('btnRun').disabled=false;
+    document.getElementById('btnStep').disabled=false;
+  }
+}
+
+function runBoth(){
+  if(animId){cancelAnimationFrame(animId);animId=null}
+  if(!bfsState||bfsState.done) bfsState=initBFS();
+  if(!dfsState||dfsState.done) dfsState=initDFS();
+  document.getElementById('btnRun').disabled=true;
+  document.getElementById('btnStep').disabled=true;
+  frameCount=0;
+  animId=requestAnimationFrame(animate);
+}
+
+function stepBoth(){
+  if(animId){cancelAnimationFrame(animId);animId=null}
+  if(!bfsState) bfsState=initBFS();
+  if(!dfsState) dfsState=initDFS();
+  const speed=getSpeed();
+  const iters=Math.max(1,Math.floor(20/speed));
+  for(let i=0;i<iters;i++){
+    if(!bfsState.done) stepBFS(bfsState);
+    if(!dfsState.done) stepDFS(dfsState);
+  }
+  drawMaze('cvsBFS', getVisitedSet(bfsState), bfsState.path, 'bfs');
+  drawMaze('cvsDFS', getVisitedSet(dfsState), dfsState.path, 'dfs');
+  updateStats(bfsState);
+  updateStats(dfsState);
+}
+
+function resetSolvers(){
+  if(animId){cancelAnimationFrame(animId);animId=null}
+  bfsState=null; dfsState=null;
+  setBadge('bfs','idle','aguardando');
+  setBadge('dfs','idle','aguardando');
+  document.getElementById('bfsVisited').textContent='—';
+  document.getElementById('bfsPath').textContent='—';
+  document.getElementById('dfsVisited').textContent='—';
+  document.getElementById('dfsPath').textContent='—';
+  document.getElementById('bfsStatus').textContent='BFS encontra sempre o caminho mais curto.';
+  document.getElementById('dfsStatus').textContent='DFS explora fundo antes de voltar.';
+  document.getElementById('btnRun').disabled=false;
+  document.getElementById('btnStep').disabled=false;
+  drawMaze('cvsBFS', null, null, 'bfs');
+  drawMaze('cvsDFS', null, null, 'dfs');
+}
+
+init();
+</script>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FakeRadar — Demonstração do Fluxo de Dados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon" aria-hidden="true">◎</span>
+      <div>
+        <strong>FakeRadar</strong>
+        <span class="logo-sub">Demonstração interativa do fluxo</span>
+      </div>
+    </div>
+    <div class="scenario-tabs" role="tablist">
+      <button class="tab active" data-scenario="new" role="tab" aria-selected="true">URL nova</button>
+      <button class="tab" data-scenario="cache" role="tab" aria-selected="false">URL em cache</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel controls">
+      <p class="section-label">// controle</p>
+      <h1>Como os dados percorrem o sistema</h1>
+      <p class="lead">
+        Simule o envio de uma notícia e acompanhe cada etapa — do clique em
+        <strong>Escanear</strong> até o veredito no portal público.
+      </p>
+
+      <label class="field">
+        <span>URL de exemplo</span>
+        <input id="url-input" type="url" value="https://g1.globo.com/mundo/noticia/2026/06/04/exemplo.ghtml" />
+      </label>
+
+      <div class="btn-row">
+        <button id="btn-start" class="btn primary">▶ Iniciar fluxo</button>
+        <button id="btn-next" class="btn ghost" disabled>Próximo passo →</button>
+        <button id="btn-reset" class="btn ghost">Reiniciar</button>
+      </div>
+
+      <label class="toggle">
+        <input id="auto-play" type="checkbox" />
+        <span>Reprodução automática</span>
+      </label>
+
+      <div class="step-list" id="step-list" aria-live="polite"></div>
+
+      <div class="legend">
+        <span><i class="dot ok"></i> Confiável</span>
+        <span><i class="dot warn"></i> Suspeito</span>
+        <span><i class="dot danger"></i> Falso</span>
+      </div>
+    </section>
+
+    <section class="panel diagram">
+      <p class="section-label">// arquitetura</p>
+      <div class="canvas" id="canvas">
+        <svg class="wires" id="wires" aria-hidden="true"></svg>
+        <div class="packet" id="packet" hidden>📦</div>
+
+        <div class="node" data-node="user" style="--x:8%;--y:42%">
+          <div class="node-icon">👤</div>
+          <div class="node-label">Usuário</div>
+        </div>
+        <div class="node" data-node="frontend" style="--x:28%;--y:18%">
+          <div class="node-icon">🖥</div>
+          <div class="node-label">Frontend</div>
+          <div class="node-port">:3000</div>
+        </div>
+        <div class="node" data-node="api" style="--x:50%;--y:42%">
+          <div class="node-icon">⚙</div>
+          <div class="node-label">Backend API</div>
+          <div class="node-port">:8080</div>
+        </div>
+        <div class="node" data-node="db" style="--x:72%;--y:18%">
+          <div class="node-icon">🗄</div>
+          <div class="node-label">PostgreSQL</div>
+          <div class="node-port">cache URL</div>
+        </div>
+        <div class="node" data-node="ai" style="--x:72%;--y:68%">
+          <div class="node-icon">🧠</div>
+          <div class="node-label">Serviço IA</div>
+          <div class="node-port">:8000</div>
+        </div>
+        <div class="node" data-node="serper" style="--x:92%;--y:68%">
+          <div class="node-icon">🔍</div>
+          <div class="node-label">Serper</div>
+          <div class="node-port">busca web</div>
+        </div>
+        <div class="node" data-node="mq" style="--x:50%;--y:82%">
+          <div class="node-icon">📨</div>
+          <div class="node-label">RabbitMQ</div>
+        </div>
+        <div class="node" data-node="portal" style="--x:28%;--y:68%">
+          <div class="node-icon">📰</div>
+          <div class="node-label">Portal público</div>
+          <div class="node-port">GET /portal</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel payload">
+      <p class="section-label">// dados neste passo</p>
+      <div class="payload-meta">
+        <span id="step-title" class="payload-title">Aguardando início…</span>
+        <span id="step-badge" class="payload-badge">idle</span>
+      </div>
+      <pre id="payload-json" class="payload-json">{
+  "status": "ready",
+  "hint": "Clique em Iniciar fluxo"
+}</pre>
+      <div id="verdict-card" class="verdict-card hidden">
+        <div class="ring" id="verdict-ring">
+          <span id="verdict-score">—</span>
+        </div>
+        <div>
+          <div id="verdict-label" class="verdict-label">—</div>
+          <p id="verdict-explain" class="verdict-explain"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    FakeRadar · Tópicos Avançados em Computação · demonstração estática (sem chamadas reais à API)
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

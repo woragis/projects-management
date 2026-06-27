@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labirinto — BFS & DFS</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0d0f;
+    --surface:   #13141a;
+    --surface2:  #1c1d26;
+    --border:    #2a2b38;
+    --text:      #e8e6e0;
+    --muted:     #6b6a72;
+    --bfs:       #3b9eff;
+    --bfs-dim:   #1a3d5c;
+    --dfs:       #ff7c3b;
+    --dfs-dim:   #5c2e10;
+    --start:     #2dd4a0;
+    --end:       #e05b8a;
+    --wall:      #1c1d26;
+    --path:      #f0ede6;
+    --cell:      14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
+
+  /* ── HEADER ─────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1;
+  }
+  .header-left h1 span.accent { color: var(--bfs); }
+  .header-left h1 span.accent2 { color: var(--dfs); }
+
+  .header-left p {
+    margin-top: .5rem;
+    font-size: .8rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: .04em;
+  }
+
+  .tags { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: .65rem;
+    padding: .25rem .6rem;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  /* ── CONTROLS ────────────────────────────────────── */
+  .controls {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .04em;
+    padding: .55rem 1.1rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn:hover { background: var(--surface2); border-color: var(--muted); }
+  .btn.primary {
+    background: var(--surface2);
+    border-color: var(--bfs);
+    color: var(--bfs);
+  }
+  .btn.primary:hover { background: var(--bfs-dim); }
+
+  .speed-group { display: flex; gap: 0; }
+  .speed-group .btn {
+    border-radius: 0;
+    border-right-width: 0;
+    padding: .55rem .8rem;
+  }
+  .speed-group .btn:first-child { border-radius: 3px 0 0 3px; }
+  .speed-group .btn:last-child  { border-radius: 0 3px 3px 0; border-right-width: 1px; }
+  .speed-group .btn.active { background: var(--surface2); color: var(--text); border-color: var(--muted); }
+
+  .sep { width: 1px; height: 28px; background: var(--border); margin: 0 .3rem; }
+
+  /* ── MAIN GRID ───────────────────────────────────── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  @media (max-width: 700px) {
+    .main { grid-template-columns: 1fr; }
+  }
+
+  /* ── PANEL ───────────────────────────────────────── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+  }
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .9rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: .6rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .status-pill.running { border-color: #ffb347; color: #ffb347; animation: pulse 1.2s ease-in-out infinite; }
+  .status-pill.done    { border-color: var(--start); color: var(--start); }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: .45; }
+  }
+
+  /* ── MAZE GRID ───────────────────────────────────── */
+  .maze-wrap {
+    padding: 1rem;
+    overflow: auto;
+    /* subtle grid texture on bg */
+    background-image: radial-gradient(circle, #2a2b3820 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .maze {
+    display: grid;
+    gap: 1px;
+    background: #1e1f2b;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    width: fit-content;
+    margin: 0 auto;
+  }
+
+  .cell {
+    width: var(--cell);
+    height: var(--cell);
+    background: var(--wall);
+  }
+  .cell.free      { background: #1f2030; }
+  .cell.explored  { background: var(--bfs-dim); }
+  .cell.explored.dfs { background: var(--dfs-dim); }
+  .cell.path      { background: var(--bfs); }
+  .cell.path.dfs  { background: var(--dfs); }
+  .cell.start     { background: var(--start); }
+  .cell.end       { background: var(--end); }
+
+  /* animate explored cells appearing */
+  .cell.explored  { animation: fadeIn .25s ease both; }
+  .cell.path      { animation: fadeIn .15s ease both; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── STATS ROW ───────────────────────────────────── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--border);
+  }
+
+  .stat {
+    padding: .75rem 1rem;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: .55rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .25rem;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.02em;
+  }
+
+  .stat-value.bfs { color: var(--bfs); }
+  .stat-value.dfs { color: var(--dfs); }
+
+  /* ── LEGEND ──────────────────────────────────────── */
+  .legend {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    padding: .75rem 0;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-family: 'Space Mono', monospace;
+    font-size: .62rem;
+    color: var(--muted);
+    letter-spacing: .03em;
+  }
+
+  .legend-box {
+    width: 11px; height: 11px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── COMPARISON BAR ──────────────────────────────── */
+  .comparison {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    grid-column: 1 / -1;
+  }
+
+  .comparison h3 {
+    font-size: .75rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .compare-row {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  .compare-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: .75rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .compare-track {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .compare-fill {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .compare-fill.bfs { background: var(--bfs); width: 38%; }
+  .compare-fill.dfs { background: var(--dfs); width: 78%; }
+  .compare-fill.path-bfs { background: var(--bfs); width: 30%; }
+  .compare-fill.path-dfs { background: var(--dfs); width: 52%; }
+
+  /* ── NOTE BOX ────────────────────────────────────── */
+  .note {
+    background: var(--surface2);
+    border-left: 3px solid var(--bfs);
+    border-radius: 0 4px 4px 0;
+    padding: .6rem .9rem;
+    font-size: .75rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    line-height: 1.6;
+  }
+  .note.dfs { border-left-color: var(--dfs); }
+  .note strong { color: var(--text); }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: .6rem;
+    color: var(--muted);
+    letter-spacing: .05em;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header>
+  <div class="header-left">
+    <h1>Maze <span class="accent">BFS</span> &amp; <span class="accent2">DFS</span></h1>
+    <p>Visualizador de algoritmos de busca em grafos</p>
+    <div class="tags">
+      <span class="tag">Grafos</span>
+      <span class="tag">BFS — Fila</span>
+      <span class="tag">DFS — Pilha</span>
+      <span class="tag">Ciência da Computação</span>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="btn primary">↻ Novo labirinto</button>
+    <div class="sep"></div>
+    <button class="btn">▶ Resolver</button>
+    <button class="btn">→ Passo</button>
+    <button class="btn">⟳ Reset</button>
+    <div class="sep"></div>
+    <div class="speed-group">
+      <button class="btn">lento</button>
+      <button class="btn active">médio</button>
+      <button class="btn">rápido</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── PANELS ──────────────────────────────────────── -->
+<div class="main">
+
+  <!-- BFS PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="dot" style="background:var(--bfs)"></span>
+        BFS — Busca em Largura
+      </div>
+      <span class="status-pill running">buscando…</span>
+    </div>
+
+    <div class="maze-wrap">
+      <div class="maze" style="grid-template-columns: repeat(21, var(--cell))">
+        <!-- Row 0: walls -->
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 1 -->
+        <div class="cell"></div><div class="cell start"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 2 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 3 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 4 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 5 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 6 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 7 -->
+        <div class="cell"></div><div class="cell path"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 8 -->
+        <div class="cell"></div><div class="cell path"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 9 -->
+        <div class="cell"></div><div class="cell path"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 10 -->
+        <div class="cell"></div><div class="cell path"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 11 -->
+        <div class="cell"></div><div class="cell path"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 12 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 13 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 14 -->
+        <div class="cell"></div><div class="cell explored"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 15 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 16 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 17 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 18 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 19 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell end"></div><div class="cell"></div>
+        <!-- Row 20 -->
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Visitadas</div>
+        <div class="stat-value bfs">143</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Caminho</div>
+        <div class="stat-value bfs">37</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ótimo?</div>
+        <div class="stat-value bfs" style="font-size:1rem;padding-top:.2rem">✓ sim</div>
+      </div>
+    </div>
+
+    <div style="padding:.75rem 1rem 1rem">
+      <div class="note">
+        <strong>BFS usa uma fila (FIFO).</strong> Expande nós por "ondas" — todos os vizinhos de distância 1 antes dos de distância 2. Isso garante que o primeiro caminho encontrado seja sempre o mais curto.
+      </div>
+    </div>
+  </div>
+
+  <!-- DFS PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="dot" style="background:var(--dfs)"></span>
+        DFS — Busca em Profundidade
+      </div>
+      <span class="status-pill done">resolvido</span>
+    </div>
+
+    <div class="maze-wrap">
+      <div class="maze" style="grid-template-columns: repeat(21, var(--cell))">
+        <!-- Row 0 -->
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 1 -->
+        <div class="cell"></div><div class="cell start"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 2 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free explored dfs"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 3 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 4 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free explored dfs"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div>
+        <!-- Row 5 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell free explored dfs"></div><div class="cell"></div>
+        <!-- Row 6 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free explored dfs"></div><div class="cell"></div>
+        <!-- Row 7 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free explored dfs"></div><div class="cell"></div>
+        <!-- Row 8 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free explored dfs"></div><div class="cell"></div>
+        <!-- Row 9 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 10 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 11 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 12 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 13 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 14 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 15 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 16 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 17 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell path dfs"></div><div class="cell"></div>
+        <!-- Row 18 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell free"></div><div class="cell"></div><div class="cell"></div>
+        <!-- Row 19 -->
+        <div class="cell"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell free"></div><div class="cell end"></div><div class="cell"></div>
+        <!-- Row 20 -->
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Visitadas</div>
+        <div class="stat-value dfs">289</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Caminho</div>
+        <div class="stat-value dfs">57</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ótimo?</div>
+        <div class="stat-value dfs" style="font-size:1rem;padding-top:.2rem">✗ não</div>
+      </div>
+    </div>
+
+    <div style="padding:.75rem 1rem 1rem">
+      <div class="note dfs">
+        <strong>DFS usa uma pilha (LIFO).</strong> Mergulha fundo em um único caminho antes de voltar. Visita mais células e o caminho encontrado costuma ser maior que o mínimo.
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARISON -->
+  <div class="comparison">
+    <h3>Comparação — mesmo labirinto</h3>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:.85rem">
+        <div class="compare-row">
+          <div class="compare-label">
+            <span>Células visitadas</span>
+            <span>BFS <strong style="color:var(--bfs)">143</strong> vs DFS <strong style="color:var(--dfs)">289</strong></span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div class="compare-track"><div class="compare-fill bfs"></div></div>
+            <div class="compare-track"><div class="compare-fill dfs"></div></div>
+          </div>
+        </div>
+
+        <div class="compare-row">
+          <div class="compare-label">
+            <span>Tamanho do caminho</span>
+            <span>BFS <strong style="color:var(--bfs)">37</strong> vs DFS <strong style="color:var(--dfs)">57</strong></span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div class="compare-track"><div class="compare-fill path-bfs"></div></div>
+            <div class="compare-track"><div class="compare-fill path-dfs"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <div style="background:var(--surface2);border-radius:4px;padding:.75rem;border-left:3px solid var(--bfs)">
+            <div class="stat-label">complexidade</div>
+            <div style="font-family:'Space Mono',monospace;font-size:.8rem;color:var(--bfs);margin-top:.3rem">O(V + E)</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">garante mínimo</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:4px;padding:.75rem;border-left:3px solid var(--dfs)">
+            <div class="stat-label">complexidade</div>
+            <div style="font-family:'Space Mono',monospace;font-size:.8rem;color:var(--dfs);margin-top:.3rem">O(V + E)</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">não garante mínimo</div>
+          </div>
+        </div>
+        <div style="font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace;line-height:1.7;background:var(--surface2);padding:.65rem .85rem;border-radius:4px">
+          Mesma complexidade assintótica, comportamentos muito diferentes.<br>
+          BFS → melhor para <strong style="color:var(--text)">caminhos mínimos</strong>.<br>
+          DFS → melhor para <strong style="color:var(--text)">detectar ciclos, ordenação topológica</strong>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-box" style="background:var(--start)"></div>início</div>
+  <div class="legend-item"><div class="legend-box" style="background:var(--end)"></div>fim</div>
+  <div class="legend-item"><div class="legend-box" style="background:#1f2030;border:1px solid var(--border)"></div>livre</div>
+  <div class="legend-item"><div class="legend-box" style="background:var(--wall)"></div>parede</div>
+  <div class="legend-item"><div class="legend-box" style="background:var(--bfs-dim)"></div>explorado (BFS)</div>
+  <div class="legend-item"><div class="legend-box" style="background:var(--dfs-dim)"></div>explorado (DFS)</div>
+  <div class="legend-item"><div class="legend-box" style="background:var(--bfs)"></div>caminho BFS</div>
+  <div class="legend-item"><div class="legend-box" style="background:var(--dfs)"></div>caminho DFS</div>
+</div>
+
+<footer>
+  <span>Grafos — BFS &amp; DFS — Visualizador de Labirinto</span>
+  <span>Ciência da Computação · Algoritmos em Grafos</span>
+</footer>
+
+</body>
+</html>
